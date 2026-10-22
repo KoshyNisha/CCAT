@@ -1,31 +1,48 @@
-# my_flutter_app
+# CCAT
 
-A new Flutter project.
+Flutter web application for Creatives for Climate Action - Thailand (CCAT).
 
-## Getting Started
+## Current implementation
 
-This project is a starting point for a Flutter application.
+The first implemented screen is the **Resources & Knowledge Hub**, based on the
+CCAT Figma Resources page. It includes:
 
-A few resources to get you started if this is your first Flutter project:
+- Responsive desktop and narrow-screen layouts.
+- Publications/toolkits and session-recording card collections.
+- Category filters for all resources, publications/toolkits, and recordings.
+- Typed local mock content that mirrors the Figma copy and can be replaced by
+  WordPress responses without changing the page layout.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Run locally in WSL
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd /home/justm/Thailand/CCAT
+flutter pub get
+flutter run -d chrome
+```
 
+## WordPress REST API
 
-## REST API Endpoints
+The local CMS base URL is:
 
-Base URL: `http://ccat-cms.local/wp-json/wp/v2` (Local)
+```text
+http://ccat-cms.local/wp-json/wp/v2
+```
 
-| Content Type | Endpoint | Example Full URL |
-| :--- | :--- | :--- |
-| **Posts** | `/posts` | `/wp-json/wp/v2/posts` |
-| **Events** | `/events` | `/wp-json/wp/v2/events` |
-| **Pages** | `/pages` | `/wp-json/wp/v2/pages` |
+| Content type | Endpoint |
+|---|---|
+| Posts | `/posts` |
+| Events | `/events` |
+| Pages | `/pages` |
 
-### Custom Parameters
-* Add `?acf_format=standard` to expand ACF field relational data in responses.
+Use `?acf_format=standard` to expand ACF relational fields in responses.
+
+`ccat-cms.local` must resolve inside the WSL environment before the app can
+replace its mock data with CMS content.
+
+## Validation
+
+```bash
+flutter analyze
+flutter test
+```
