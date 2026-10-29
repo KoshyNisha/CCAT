@@ -10,7 +10,7 @@ class CcatApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'CCAT | Resources',
+      title: 'CCAT | Creatives for Climate Action',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -21,13 +21,61 @@ class CcatApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ResourcesPage(),
+      home: const MainScreen(),
     );
   }
 }
 
+/// Central screen that handles bottom/header navigation between all 5 pages
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 3; // Default to Resources (index 3 based on list order)
+  bool _isEnglish = true;
+
+  // List of all pages corresponding to: About, News, Events, Resources, Contact
+  List<Widget> get _pages => [
+        AboutPage(isEnglish: _isEnglish, onLanguageChanged: (val) => setState(() => _isEnglish = val)),
+        NewsPage(isEnglish: _isEnglish, onLanguageChanged: (val) => setState(() => _isEnglish = val)),
+        EventsPage(isEnglish: _isEnglish, onLanguageChanged: (val) => setState(() => _isEnglish = val)),
+        ResourcesPage(isEnglish: _isEnglish, onLanguageChanged: (val) => setState(() => _isEnglish = val)),
+        ContactPage(isEnglish: _isEnglish, onLanguageChanged: (val) => setState(() => _isEnglish = val)),
+      ];
+
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 1. RESOURCES PAGE (Your original code[cite: 1])
+// ==========================================
 class ResourcesPage extends StatefulWidget {
-  const ResourcesPage({super.key});
+  const ResourcesPage({
+    required this.isEnglish,
+    required this.onLanguageChanged,
+    super.key,
+  });
+
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
 
   @override
   State<ResourcesPage> createState() => _ResourcesPageState();
@@ -35,7 +83,6 @@ class ResourcesPage extends StatefulWidget {
 
 class _ResourcesPageState extends State<ResourcesPage> {
   ResourceFilter _selectedFilter = ResourceFilter.all;
-  bool _isEnglish = true;
 
   @override
   Widget build(BuildContext context) {
@@ -62,10 +109,9 @@ class _ResourcesPageState extends State<ResourcesPage> {
         child: Column(
           children: [
             SiteHeader(
-              isEnglish: _isEnglish,
-              onLanguageSelected: (isEnglish) {
-                setState(() => _isEnglish = isEnglish);
-              },
+              isEnglish: widget.isEnglish,
+              onLanguageSelected: widget.onLanguageChanged,
+              currentIndex: 3,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -132,15 +178,123 @@ class _ResourcesPageState extends State<ResourcesPage> {
   }
 }
 
+// ==========================================
+// 2. OTHER PAGE PLACEHOLDERS (About, News, Events, Contact)
+// ==========================================
+class AboutPage extends StatelessWidget {
+  const AboutPage({required this.isEnglish, required this.onLanguageChanged, super.key});
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            SiteHeader(isEnglish: isEnglish, onLanguageSelected: onLanguageChanged, currentIndex: 0),
+            const Expanded(
+              child: Center(
+                child: Text('About Page Content Coming Soon', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            const SiteFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NewsPage extends StatelessWidget {
+  const NewsPage({required this.isEnglish, required this.onLanguageChanged, super.key});
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            SiteHeader(isEnglish: isEnglish, onLanguageSelected: onLanguageChanged, currentIndex: 1),
+            const Expanded(
+              child: Center(
+                child: Text('News Page Content Coming Soon', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            const SiteFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EventsPage extends StatelessWidget {
+  const EventsPage({required this.isEnglish, required this.onLanguageChanged, super.key});
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            SiteHeader(isEnglish: isEnglish, onLanguageSelected: onLanguageChanged, currentIndex: 2),
+            const Expanded(
+              child: Center(
+                child: Text('Events Page Content Coming Soon', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            const SiteFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ContactPage extends StatelessWidget {
+  const ContactPage({required this.isEnglish, required this.onLanguageChanged, super.key});
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            SiteHeader(isEnglish: isEnglish, onLanguageSelected: onLanguageChanged, currentIndex: 4),
+            const Expanded(
+              child: Center(
+                child: Text('Contact Page Content Coming Soon', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
+              ),
+            ),
+            const SiteFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// SHARED COMPONENTS (Header, Footer, etc.)
+// ==========================================
 class SiteHeader extends StatelessWidget {
   const SiteHeader({
     required this.isEnglish,
     required this.onLanguageSelected,
+    required this.currentIndex,
     super.key,
   });
 
   final bool isEnglish;
   final ValueChanged<bool> onLanguageSelected;
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -155,13 +309,19 @@ class SiteHeader extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: narrow ? 24 : 56),
         child: Row(
           children: [
-            const Text(
-              'CCAT',
-              style: TextStyle(
-                color: CcatColors.textPrimary,
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -1.3,
+            GestureDetector(
+              onTap: () {
+                // Clicking logo goes back to Resources or home
+                context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(3);
+              },
+              child: const Text(
+                'CCAT',
+                style: TextStyle(
+                  color: CcatColors.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -1.3,
+                ),
               ),
             ),
             const SizedBox(width: 18),
@@ -177,9 +337,15 @@ class SiteHeader extends StatelessWidget {
                 ),
               ),
             const Spacer(),
-            if (!narrow) const DesktopNavigation(),
+            if (!narrow) DesktopNavigation(currentIndex: currentIndex),
             if (narrow)
-              const Icon(Icons.menu_rounded, color: CcatColors.textPrimary),
+              IconButton(
+                icon: const Icon(Icons.menu_rounded, color: CcatColors.textPrimary),
+                onPressed: () {
+                  // Open Mobile Drawer Menu
+                  _showNavigationDrawer(context);
+                },
+              ),
             const SizedBox(width: 18),
             LanguageToggle(
               isEnglish: isEnglish,
@@ -190,10 +356,41 @@ class SiteHeader extends StatelessWidget {
       ),
     );
   }
+
+  void _showNavigationDrawer(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: CcatColors.background,
+      builder: (context) {
+        const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Menu', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 16),
+              for (int i = 0; i < entries.length; i++)
+                ListTile(
+                  title: Text(entries[i], style: TextStyle(fontWeight: i == currentIndex ? FontWeight.w800 : FontWeight.w500, color: i == currentIndex ? CcatColors.green : CcatColors.textPrimary)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(i);
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 class DesktopNavigation extends StatelessWidget {
-  const DesktopNavigation({super.key});
+  const DesktopNavigation({required this.currentIndex, super.key});
+
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -201,19 +398,24 @@ class DesktopNavigation extends StatelessWidget {
 
     return Row(
       children: [
-        for (final entry in entries)
+        for (int i = 0; i < entries.length; i++)
           Padding(
             padding: const EdgeInsets.only(left: 28),
-            child: Text(
-              entry,
-              style: TextStyle(
-                color: entry == 'Resources'
-                    ? CcatColors.green
-                    : CcatColors.textMuted,
-                fontSize: 14,
-                fontWeight: entry == 'Resources'
-                    ? FontWeight.w700
-                    : FontWeight.w500,
+            child: InkWell(
+              onTap: () {
+                context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(i);
+              },
+              child: Text(
+                entries[i],
+                style: TextStyle(
+                  color: i == currentIndex
+                      ? CcatColors.green
+                      : CcatColors.textMuted,
+                  fontSize: 14,
+                  fontWeight: i == currentIndex
+                      ? FontWeight.w700
+                      : FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -298,7 +500,7 @@ class PageIntroduction extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'CCAT / OPEN LIBRARY',
           style: TextStyle(
             color: CcatColors.green,
@@ -307,8 +509,8 @@ class PageIntroduction extends StatelessWidget {
             letterSpacing: 2.1,
           ),
         ),
-        SizedBox(height: 24),
-        Text(
+        const SizedBox(height: 24),
+        const Text(
           'Resources & Knowledge Hub',
           style: TextStyle(
             color: CcatColors.textPrimary,
@@ -318,10 +520,10 @@ class PageIntroduction extends StatelessWidget {
             letterSpacing: -2.2,
           ),
         ),
-        SizedBox(height: 24),
+        const SizedBox(height: 24),
         ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 720),
-          child: Text(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: const Text(
             'Explore practical toolkits, field manuals, green guides, and '
             'recorded sessions designed to support climate action across '
             'Thailand’s creative economy.',
