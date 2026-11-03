@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'events_page.dart';
 
 void main() {
   runApp(const CcatApp());
@@ -21,7 +22,8 @@ class CcatApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const ResourcesPage(),
+      // home: const ResourcesPage(),
+      home: const EventsPage(),
     );
   }
 }
