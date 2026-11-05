@@ -4,14 +4,18 @@ Flutter web application for Creatives for Climate Action - Thailand (CCAT).
 
 ## Current implementation
 
-The first implemented screen is the **Resources & Knowledge Hub**, based on the
-CCAT Figma Resources page. It includes:
+Implemented pages are the **Resources & Knowledge Hub** and **About** pages,
+based on the updated CCAT Figma designs. The shared navigation now opens each
+site tab, with Resources in its dedicated Resources tab. The implemented
+screens include:
 
 - Responsive desktop and narrow-screen layouts.
 - Publications/toolkits and session-recording card collections.
 - Category filters for all resources, publications/toolkits, and recordings.
-- Typed local mock content that mirrors the Figma copy and can be replaced by
-  WordPress responses without changing the page layout.
+- Typed local resource data sourced from the CCAT 2026 website brief, structured
+  so it can be replaced by WordPress responses without changing the page layout.
+- An About page with CCAT’s origin, conference-to-initiative story, milestone
+  timeline, partners section, and shared footer.
 
 ## Run locally in WSL
 
