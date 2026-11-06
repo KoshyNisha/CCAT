@@ -5,11 +5,13 @@ class EventsPage extends StatefulWidget {
   const EventsPage({
     required this.isEnglish,
     required this.onLanguageChanged,
+    this.onEventSelected,
     super.key,
   });
 
   final bool isEnglish;
   final ValueChanged<bool> onLanguageChanged;
+  final ValueChanged<EventItem>? onEventSelected;
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -86,6 +88,7 @@ class _EventsPageState extends State<EventsPage> {
                                 FeaturedEventCard(
                                   item: featuredEvent,
                                   isNarrow: isNarrow,
+                                  onSelect: () => widget.onEventSelected?.call(featuredEvent),
                                 ),
                                 const SizedBox(height: 32),
                               ],
@@ -93,6 +96,7 @@ class _EventsPageState extends State<EventsPage> {
                               EventGrid(
                                 items: gridEvents,
                                 isNarrow: isNarrow,
+                                onEventSelected: widget.onEventSelected,
                               ),
 
                               const SizedBox(height: 112),
@@ -114,7 +118,7 @@ class _EventsPageState extends State<EventsPage> {
 }
 
 // ==========================================
-// PAGE INTRO & ACCESSIBLE FILTER CHIPS
+// PAGE INTRO & INTERACTIVE FILTER CHIPS
 // ==========================================
 
 class PageIntroduction extends StatelessWidget {
@@ -210,24 +214,24 @@ class EventFilters extends StatelessWidget {
                     return accentColor.withValues(alpha: 0.25);
                   }
                   if (isSelected) {
-                    return accentColor; // Selected: 100% solid fill
+                    return accentColor;
                   }
                   if (states.contains(WidgetState.hovered)) {
-                    return accentColor.withValues(alpha: 0.7); // Hovered: ~70% solid fill
+                    return accentColor.withValues(alpha: 0.7);
                   }
-                  return Colors.transparent; // Unselected: Outline only
+                  return Colors.transparent;
                 }),
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.disabled)) {
                     return accentColor.withValues(alpha: 0.4);
                   }
                   if (isSelected) {
-                    return Colors.white; // Pure white text when selected
+                    return Colors.white;
                   }
                   if (states.contains(WidgetState.hovered)) {
-                    return const Color(0xFF111111); // Black text when hovered
+                    return const Color(0xFF111111);
                   }
-                  return accentColor; // Default unselected text color
+                  return accentColor;
                 }),
                 textStyle: const WidgetStatePropertyAll(
                   TextStyle(
@@ -254,11 +258,13 @@ class FeaturedEventCard extends StatelessWidget {
   const FeaturedEventCard({
     required this.item,
     required this.isNarrow,
+    this.onSelect,
     super.key,
   });
 
   final EventItem item;
   final bool isNarrow;
+  final VoidCallback? onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -351,7 +357,7 @@ class FeaturedEventCard extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 48),
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: onSelect,
               style: ElevatedButton.styleFrom(
                 backgroundColor: item.accent,
                 foregroundColor: (item.accent == CcatColors.gold || item.accent == CcatColors.green)
@@ -384,11 +390,13 @@ class EventGrid extends StatelessWidget {
   const EventGrid({
     required this.items,
     required this.isNarrow,
+    this.onEventSelected,
     super.key,
   });
 
   final List<EventItem> items;
   final bool isNarrow;
+  final ValueChanged<EventItem>? onEventSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -398,7 +406,10 @@ class EventGrid extends StatelessWidget {
           for (final item in items)
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: EventCard(item: item),
+              child: EventCard(
+                item: item,
+                onSelect: () => onEventSelected?.call(item),
+              ),
             ),
         ],
       );
@@ -424,12 +435,18 @@ class EventGrid extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Expanded(
-                    child: EventCard(item: rowItems[0]),
+                    child: EventCard(
+                      item: rowItems[0],
+                      onSelect: () => onEventSelected?.call(rowItems[0]),
+                    ),
                   ),
                   const SizedBox(width: 24),
                   Expanded(
                     child: rowItems.length > 1
-                        ? EventCard(item: rowItems[1])
+                        ? EventCard(
+                            item: rowItems[1],
+                            onSelect: () => onEventSelected?.call(rowItems[1]),
+                          )
                         : const SizedBox.shrink(),
                   ),
                 ],
@@ -442,9 +459,14 @@ class EventGrid extends StatelessWidget {
 }
 
 class EventCard extends StatelessWidget {
-  const EventCard({required this.item, super.key});
+  const EventCard({
+    required this.item,
+    this.onSelect,
+    super.key,
+  });
 
   final EventItem item;
+  final VoidCallback? onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -529,7 +551,7 @@ class EventCard extends StatelessWidget {
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(minHeight: 48),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: onSelect,
                           style: TextButton.styleFrom(
                             foregroundColor: item.accent,
                             padding: EdgeInsets.zero,
@@ -643,183 +665,6 @@ class StatusBadge extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w800,
             letterSpacing: .5,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==========================================
-// ACCESSIBLE SITE FOOTER WITH RIGHT DONATE BUTTON
-// ==========================================
-
-class SiteFooter extends StatelessWidget {
-  const SiteFooter({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 700;
-
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: CcatColors.border)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: narrow ? 24 : 56,
-          vertical: 34,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row 1: Brand details on left, Donate button on right
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'CREATIVES FOR CLIMATE ACTION',
-                      style: TextStyle(
-                        color: CcatColors.purple,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: .9,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'A project by Creative Migration',
-                      style: TextStyle(
-                        color: CcatColors.textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(height: 14),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FooterLink('Instagram', CcatColors.textPrimary),
-                        FooterLink('LinkedIn', CcatColors.textPrimary),
-                        FooterLink('Facebook', CcatColors.textPrimary),
-                      ],
-                    ),
-                  ],
-                ),
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: CcatColors.purple,
-                    side: const BorderSide(color: CcatColors.purple),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 26,
-                      vertical: 16,
-                    ),
-                    shape: const StadiumBorder(),
-                  ),
-                  child: const Text(
-                    'Donate',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Divider(color: CcatColors.border),
-            const SizedBox(height: 20),
-            const Text(
-              '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
-              style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ==========================================
-// ACCESSIBLE LANGUAGE TOGGLE WIDGET
-// ==========================================
-
-class LanguageToggle extends StatelessWidget {
-  const LanguageToggle({
-    required this.isEnglish,
-    required this.onLanguageSelected,
-    super.key,
-  });
-
-  final bool isEnglish;
-  final ValueChanged<bool> onLanguageSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Language selector',
-      child: Container(
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: CcatColors.coral, // Solid vivid accent background from spec
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _LanguageOption(
-              label: 'EN',
-              selected: isEnglish,
-              onTap: () => onLanguageSelected(true),
-            ),
-            _LanguageOption(
-              label: 'TH',
-              selected: !isEnglish,
-              onTap: () => onLanguageSelected(false),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LanguageOption extends StatelessWidget {
-  const _LanguageOption({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: 'Switch language to $label',
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent, // Active white pill
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: selected ? CcatColors.coral : Colors.white, // Active coral / Inactive white
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-            ),
           ),
         ),
       ),

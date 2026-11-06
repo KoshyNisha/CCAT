@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'events_page.dart';
+import 'event_highlight_page.dart';
 
 void main() {
   runApp(const CcatApp());
@@ -36,10 +37,10 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 3; // Default to Resources (index 3 based on list order)
+  int _currentIndex = 2; // Default to Events tab
   bool _isEnglish = true;
+  EventItem? _selectedEvent; // Holds active event detail
 
-  // List of all pages corresponding to: About, News, Events, Resources, Contact
   List<Widget> get _pages => [
     AboutPage(
       isEnglish: _isEnglish,
@@ -49,10 +50,7 @@ class _MainScreenState extends State<MainScreen> {
       isEnglish: _isEnglish,
       onLanguageChanged: (val) => setState(() => _isEnglish = val),
     ),
-    EventsPage(
-      isEnglish: _isEnglish,
-      onLanguageChanged: (val) => setState(() => _isEnglish = val),
-    ),
+    _buildEventsTab(), // <-- MUST call this helper method
     ResourcesPage(
       isEnglish: _isEnglish,
       onLanguageChanged: (val) => setState(() => _isEnglish = val),
@@ -62,6 +60,25 @@ class _MainScreenState extends State<MainScreen> {
       onLanguageChanged: (val) => setState(() => _isEnglish = val),
     ),
   ];
+
+  Widget _buildEventsTab() {
+    if (_selectedEvent != null) {
+      return EventDetailPage(
+        event: _selectedEvent!,
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+        onBackToEvents: () => setState(() => _selectedEvent = null),
+      );
+    }
+
+    return EventsPage(
+      isEnglish: _isEnglish,
+      onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      onEventSelected: (event) => setState(() => _selectedEvent = event),
+    );
+  }
+  
+  // ... rest of _MainScreenState
 
   void _navigateToTab(int index) {
     setState(() {
