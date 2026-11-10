@@ -28,7 +28,7 @@ class CcatApp extends StatelessWidget {
   }
 }
 
-/// Central screen that handles bottom/header navigation between all 5 pages
+/// Central screen that handles bottom/header navigation between all pages
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -41,26 +41,12 @@ class _MainScreenState extends State<MainScreen> {
   bool _isEnglish = true;
   EventItem? _selectedEvent; // Holds active event detail
 
-  // List of all pages corresponding to: About, News, Events, Resources, Contact
-  List<Widget> get _pages => [
-    AboutPage(
-      isEnglish: _isEnglish,
-      onLanguageChanged: (val) => setState(() => _isEnglish = val),
-    ),
-    NewsPage(
-      isEnglish: _isEnglish,
-      onLanguageChanged: (val) => setState(() => _isEnglish = val),
-    ),
-    _buildEventsTab(), // <-- MUST call this helper method
-    ResourcesPage(
-      isEnglish: _isEnglish,
-      onLanguageChanged: (val) => setState(() => _isEnglish = val),
-    ),
-    ContactPage(
-      isEnglish: _isEnglish,
-      onLanguageChanged: (val) => setState(() => _isEnglish = val),
-    ),
-  ];
+  void _navigateToTab(int index) {
+    setState(() {
+      _currentIndex = index;
+      _selectedEvent = null; // ALWAYS reset event detail view when clicking tabs or CCAT logo
+    });
+  }
 
   Widget _buildEventsTab() {
     if (_selectedEvent != null) {
@@ -78,26 +64,83 @@ class _MainScreenState extends State<MainScreen> {
       onEventSelected: (event) => setState(() => _selectedEvent = event),
     );
   }
-  
-  // ... rest of _MainScreenState
-
-  void _navigateToTab(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      HomePage(
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      ),
+      NewsPage(
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      ),
+      _buildEventsTab(),
+      ResourcesPage(
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      ),
+      ContactPage(
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      ),
+    ];
+
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pages,
+      ),
     );
   }
 }
 
-// ==========================================
-// 1. RESOURCES PAGE (Your original code[cite: 1])
-// ==========================================
+// ============================================================================
+// 0. HOME PAGE PLACEHOLDER
+// ============================================================================
+
+class HomePage extends StatelessWidget {
+  const HomePage({
+    required this.isEnglish,
+    required this.onLanguageChanged,
+    super.key,
+  });
+
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            SiteHeader(
+              isEnglish: isEnglish,
+              onLanguageSelected: onLanguageChanged,
+              currentIndex: 0,
+            ),
+            const Expanded(
+              child: Center(
+                child: Text(
+                  'Home Page Content Coming Soon',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ),
+            const SiteFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ============================================================================
+// 1. RESOURCES PAGE
+// ============================================================================
+
 class ResourcesPage extends StatefulWidget {
   const ResourcesPage({
     required this.isEnglish,
@@ -123,9 +166,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
           initialIsEnglish: widget.isEnglish,
           onTabSelected: (index) {
             Navigator.of(context).pop();
-            context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(
-              index,
-            );
+            context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(index);
           },
         ),
       ),
@@ -135,6 +176,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
   @override
   Widget build(BuildContext context) {
     final isNarrow = MediaQuery.sizeOf(context).width < 760;
+
     final publications = resourceItems
         .where(
           (item) =>
@@ -143,6 +185,7 @@ class _ResourcesPageState extends State<ResourcesPage> {
                   _selectedFilter == ResourceFilter.publications),
         )
         .toList();
+
     final recordings = resourceItems
         .where(
           (item) =>
@@ -228,485 +271,9 @@ class _ResourcesPageState extends State<ResourcesPage> {
   }
 }
 
-class AboutPage extends StatelessWidget {
-  const AboutPage({
-    required this.isEnglish,
-    required this.onLanguageChanged,
-    super.key,
-  });
-
-  final bool isEnglish;
-  final ValueChanged<bool> onLanguageChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 760;
-
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            SiteHeader(
-              isEnglish: isEnglish,
-              onLanguageSelected: onLanguageChanged,
-              currentIndex: 0,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1600),
-                        child: Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            narrow ? 24 : 56,
-                            narrow ? 80 : 132,
-                            narrow ? 24 : 56,
-                            112,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const _AboutHeroMark(),
-                              SizedBox(height: narrow ? 92 : 178),
-                              const _AboutBeginning(),
-                              SizedBox(height: narrow ? 96 : 160),
-                              const _AboutConference(),
-                              SizedBox(height: narrow ? 96 : 144),
-                              const _AboutMilestones(),
-                              SizedBox(height: narrow ? 96 : 144),
-                              const _AboutPartners(),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SiteFooter(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutHeroMark extends StatelessWidget {
-  const _AboutHeroMark();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Column(
-        children: [
-          Icon(Icons.eco_outlined, color: CcatColors.gold, size: 20),
-          SizedBox(height: 12),
-          Text(
-            'CREATIVES FOR CLIMATE ACTION',
-            style: TextStyle(
-              color: CcatColors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'For a climate-conscious creative economy',
-            style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AboutBeginning extends StatelessWidget {
-  const _AboutBeginning();
-
-  @override
-  Widget build(BuildContext context) {
-    return _AboutSplitSection(
-      label: 'ABOUT / THE BEGINNINGS',
-      title: 'The Beginnings',
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Creatives for Climate Action — Thailand (CCAT) began as a single '
-            'conference, held June 26–27, 2024, at the Thailand Creative & '
-            'Design Center (TCDC) in Bangkok and online. The first edition was '
-            'a project by UNESCO Culture Thailand, produced by Creative '
-            'Migration and in collaboration with the Creative Economy Agency '
-            '(CEA), and brought together Thai and European festival organizers, '
-            'sustainability experts, artists, and policymakers to share best '
-            'practices and develop actionable tools for climate action within '
-            'the creative economy.',
-            style: _AboutTextStyle.body,
-          ),
-          SizedBox(height: 22),
-          Text(
-            'The conference responded to a specific and structural gap: '
-            'Southeast Asia’s cultural and creative sector holds a unique role '
-            'of influence. It shapes how people imagine the future, what they '
-            'value, and how they organize, while also sharing real production '
-            'challenges around venues, travel, waste, and resource use. CCAT '
-            'creates the conditions to move from conversation to action.',
-            style: _AboutTextStyle.body,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AboutConference extends StatelessWidget {
-  const _AboutConference();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 860;
-        final copy = const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'What started as a one-off gathering quickly grew into the '
-              'beginning of something longer-term. In the months following the '
-              '2024 conference, Creative Migration received permission from '
-              'UNESCO to continue and expand the work.',
-              style: _AboutTextStyle.body,
-            ),
-            SizedBox(height: 18),
-            Text(
-              'Since then, Creative Migration has continued to build out '
-              'CCAT’s core resource, the CCAT Toolkit, while representing '
-              'Southeast Asian creatives in cultural and climate gatherings '
-              'across the Global North and Global South — from panels at G20 '
-              'Brazil and Los Angeles Climate Week, to industry summits in '
-              'Singapore and beyond.',
-              style: _AboutTextStyle.body,
-            ),
-          ],
-        );
-
-        final visual = const _ConferenceVisual();
-        return _AboutSplitSection(
-          label: '',
-          title: 'From a Conference to an Initiative',
-          child: narrow
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [copy, const SizedBox(height: 36), visual],
-                )
-              : Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(child: copy),
-                    const SizedBox(width: 72),
-                    const Expanded(child: _ConferenceVisual()),
-                  ],
-                ),
-        );
-      },
-    );
-  }
-}
-
-class _ConferenceVisual extends StatelessWidget {
-  const _ConferenceVisual();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 258,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: CcatColors.visualShade,
-        borderRadius: BorderRadius.circular(9),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.play_circle_outline, color: CcatColors.coral, size: 28),
-            SizedBox(height: 14),
-            Text(
-              'CCAT / 2024',
-              style: TextStyle(
-                color: CcatColors.coral,
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.5,
-              ),
-            ),
-            SizedBox(height: 4),
-            Text(
-              'Conference still',
-              style: TextStyle(color: Colors.white70, fontSize: 11),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AboutMilestones extends StatelessWidget {
-  const _AboutMilestones();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _AboutSectionHeading(title: 'Key Milestones'),
-        const SizedBox(height: 34),
-        Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              left: BorderSide(color: CcatColors.coral, width: 1.5),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final milestone in _aboutMilestones)
-                _MilestoneItem(milestone: milestone),
-            ],
-          ),
-        ),
-        const SizedBox(height: 28),
-        OutlinedButton(
-          onPressed: () {
-            context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(
-              2,
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: CcatColors.coral,
-            side: const BorderSide(color: CcatColors.coral),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          ),
-          child: const Text(
-            'Explore all events',
-            style: TextStyle(fontWeight: FontWeight.w800),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _MilestoneItem extends StatelessWidget {
-  const _MilestoneItem({required this.milestone});
-
-  final _Milestone milestone;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            milestone.date,
-            style: const TextStyle(
-              color: CcatColors.coral,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.1,
-            ),
-          ),
-          const SizedBox(height: 7),
-          Text(milestone.description, style: _AboutTextStyle.milestone),
-          const SizedBox(height: 7),
-          Text(
-            milestone.reference,
-            style: const TextStyle(
-              color: CcatColors.coral,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: .45,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AboutPartners extends StatelessWidget {
-  const _AboutPartners();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _AboutSectionHeading(title: 'Our Partners'),
-        SizedBox(height: 20),
-        ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: 900),
-          child: Text(
-            'CCAT is made possible through the collaboration of institutional, '
-            'cultural and industry partners across Thailand, Europe and beyond. '
-            'Thank you to everyone who has supported this work so far.',
-            style: _AboutTextStyle.body,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AboutSplitSection extends StatelessWidget {
-  const _AboutSplitSection({
-    required this.label,
-    required this.title,
-    required this.child,
-  });
-
-  final String label;
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 760;
-        final heading = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: 32, child: Divider(color: CcatColors.coral)),
-            const SizedBox(height: 18),
-            Text(title, style: _AboutTextStyle.sectionTitle),
-            if (label.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(label, style: _AboutTextStyle.label),
-            ],
-          ],
-        );
-
-        if (narrow) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [heading, const SizedBox(height: 32), child],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(width: 300, child: heading),
-            const SizedBox(width: 76),
-            Expanded(child: child),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _AboutSectionHeading extends StatelessWidget {
-  const _AboutSectionHeading({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(width: 32, child: Divider(color: CcatColors.coral)),
-        const SizedBox(height: 18),
-        Text(title, style: _AboutTextStyle.sectionTitle),
-      ],
-    );
-  }
-}
-
-abstract final class _AboutTextStyle {
-  static const sectionTitle = TextStyle(
-    color: CcatColors.textPrimary,
-    fontSize: 28,
-    height: 1.1,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -1,
-  );
-  static const label = TextStyle(
-    color: CcatColors.gold,
-    fontSize: 10,
-    fontWeight: FontWeight.w800,
-    letterSpacing: 1.15,
-  );
-  static const body = TextStyle(
-    color: CcatColors.textMuted,
-    fontSize: 15,
-    height: 1.62,
-  );
-  static const milestone = TextStyle(
-    color: CcatColors.textMuted,
-    fontSize: 13,
-    height: 1.5,
-  );
-}
-
-class _Milestone {
-  const _Milestone(this.date, this.description, this.reference);
-
-  final String date;
-  final String description;
-  final String reference;
-}
-
-const _aboutMilestones = [
-  _Milestone(
-    'JUNE 26–27, 2024',
-    'The first CCAT conference was held at TCDC Bangkok and online, bringing '
-        'together European and Thai stakeholders in the creative industries.',
-    'LEARN MORE ABOUT CCAT CONFERENCE 2024 →',
-  ),
-  _Milestone(
-    'OCTOBER 30, 2024',
-    'The CCAT Toolkit 2024 launched at a press event hosted by the Austrian '
-        'Embassy in Bangkok.',
-    'LEARN MORE ABOUT CCAT TOOLKIT 2024 →',
-  ),
-  _Milestone(
-    'NOVEMBER, 2024',
-    'CCAT contributed to the International Seminar on Culture and Climate '
-        'Change during G20 Brazil, sharing Southeast Asia’s experience '
-        'developing practical sustainability tools for cultural sectors.',
-    'LEARN MORE ABOUT G20 BRAZIL →',
-  ),
-  _Milestone(
-    'MAY 22, 2025',
-    'CCAT co-organized “Mobilizing Culture: Creative Leadership & '
-        'Transnational Policy,” connecting Los Angeles Climate Week with the '
-        'first-ever Bangkok Climate Action Week.',
-    'LEARN MORE ABOUT THE PANEL RECORDING →',
-  ),
-  _Milestone(
-    'SEPTEMBER 2025',
-    'A condensed CCAT Field Manual was released to support cultural organizers '
-        'during Bangkok Climate Action Week.',
-    'LEARN MORE ABOUT CCAT FIELD MANUAL 2025 →',
-  ),
-  _Milestone(
-    'SEPTEMBER 2025',
-    'CCAT hosted programming during Bangkok Climate Action Week (BKKCAW), '
-        'bringing the initiative into dialogue with the city’s climate action '
-        'community.',
-    'LEARN MORE ABOUT BKKCAW →',
-  ),
-];
+// ============================================================================
+// 2. NEWS PAGE PLACEHOLDER
+// ============================================================================
 
 class NewsPage extends StatelessWidget {
   const NewsPage({
@@ -714,6 +281,7 @@ class NewsPage extends StatelessWidget {
     required this.onLanguageChanged,
     super.key,
   });
+
   final bool isEnglish;
   final ValueChanged<bool> onLanguageChanged;
 
@@ -744,12 +312,17 @@ class NewsPage extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// 3. CONTACT PAGE PLACEHOLDER
+// ============================================================================
+
 class ContactPage extends StatelessWidget {
   const ContactPage({
     required this.isEnglish,
     required this.onLanguageChanged,
     super.key,
   });
+
   final bool isEnglish;
   final ValueChanged<bool> onLanguageChanged;
 
@@ -780,9 +353,10 @@ class ContactPage extends StatelessWidget {
   }
 }
 
-// ==========================================
-// SHARED COMPONENTS (Header, Footer, etc.)
-// ==========================================
+// ============================================================================
+// SHARED COMPONENTS (Header, Footer, LanguageToggle, etc.)
+// ============================================================================
+
 class SiteHeader extends StatelessWidget {
   const SiteHeader({
     required this.isEnglish,
@@ -797,6 +371,14 @@ class SiteHeader extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onTabSelected;
 
+  void _selectTab(BuildContext context, int index) {
+    if (onTabSelected != null) {
+      onTabSelected!(index);
+      return;
+    }
+    context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < 900;
@@ -810,30 +392,44 @@ class SiteHeader extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: narrow ? 24 : 56),
         child: Row(
           children: [
-            GestureDetector(
-              onTap: () => _selectTab(context, 3),
-              child: const Text(
-                'CCAT',
-                style: TextStyle(
-                  color: CcatColors.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -1.3,
+            // Clickable CCAT Branding with Hover Pointer -> Navigates to Index 0 (Home)
+            MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: InkWell(
+                onTap: () => _selectTab(context, 0),
+                borderRadius: BorderRadius.circular(6),
+                hoverColor: CcatColors.coral.withValues(alpha: 0.08),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'CCAT',
+                        style: TextStyle(
+                          color: CcatColors.textPrimary,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -1.3,
+                        ),
+                      ),
+                      const SizedBox(width: 18),
+                      Container(width: 1, height: 20, color: CcatColors.border),
+                      const SizedBox(width: 18),
+                      if (!narrow)
+                        const Text(
+                          'Creatives for Climate Action Thailand',
+                          style: TextStyle(
+                            color: CcatColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 18),
-            Container(width: 1, height: 20, color: CcatColors.border),
-            const SizedBox(width: 18),
-            if (!narrow)
-              const Text(
-                'Creatives for Climate Action — Thailand',
-                style: TextStyle(
-                  color: CcatColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             const Spacer(),
             if (!narrow)
               DesktopNavigation(
@@ -842,14 +438,8 @@ class SiteHeader extends StatelessWidget {
               ),
             if (narrow)
               IconButton(
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  color: CcatColors.textPrimary,
-                ),
-                onPressed: () {
-                  // Open Mobile Drawer Menu
-                  _showNavigationDrawer(context);
-                },
+                icon: const Icon(Icons.menu_rounded, color: CcatColors.textPrimary),
+                onPressed: () => _showNavigationDrawer(context),
               ),
             const SizedBox(width: 18),
             LanguageToggle(
@@ -888,12 +478,8 @@ class SiteHeader extends StatelessWidget {
                       title: Text(
                         entries[i],
                         style: TextStyle(
-                          fontWeight: i == currentIndex
-                              ? FontWeight.w800
-                              : FontWeight.w500,
-                          color: i == currentIndex
-                              ? CcatColors.green
-                              : CcatColors.textPrimary,
+                          fontWeight: i == currentIndex ? FontWeight.w800 : FontWeight.w500,
+                          color: i == currentIndex ? CcatColors.green : CcatColors.textPrimary,
                         ),
                       ),
                       onTap: () {
@@ -913,15 +499,6 @@ class SiteHeader extends StatelessWidget {
       },
     );
   }
-
-  void _selectTab(BuildContext context, int index) {
-    if (onTabSelected != null) {
-      onTabSelected!(index);
-      return;
-    }
-
-    context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(index);
-  }
 }
 
 class DesktopNavigation extends StatelessWidget {
@@ -937,7 +514,6 @@ class DesktopNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
-
     return Row(
       children: [
         for (int i = 0; i < entries.length; i++)
@@ -948,21 +524,15 @@ class DesktopNavigation extends StatelessWidget {
                 if (onTabSelected != null) {
                   onTabSelected!(i);
                 } else {
-                  context
-                      .findAncestorStateOfType<_MainScreenState>()
-                      ?._navigateToTab(i);
+                  context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(i);
                 }
               },
               child: Text(
                 entries[i],
                 style: TextStyle(
-                  color: i == currentIndex
-                      ? CcatColors.green
-                      : CcatColors.textMuted,
+                  color: i == currentIndex ? CcatColors.green : CcatColors.textMuted,
                   fontSize: 14,
-                  fontWeight: i == currentIndex
-                      ? FontWeight.w700
-                      : FontWeight.w500,
+                  fontWeight: i == currentIndex ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ),
@@ -989,9 +559,9 @@ class LanguageToggle extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
-          color: Colors.white, // White capsule background
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: CcatColors.border), // Clean outline matching site design
+          border: Border.all(color: CcatColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1037,13 +607,13 @@ class _LanguageOption extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: selected ? CcatColors.coral : Colors.transparent, // Active orange/coral pill
+            color: selected ? CcatColors.coral : Colors.transparent,
             borderRadius: BorderRadius.circular(18),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: selected ? Colors.white : CcatColors.textMuted, // White text on orange / Muted text on white
+              color: selected ? Colors.white : CcatColors.textMuted,
               fontSize: 12,
               fontWeight: FontWeight.w800,
             ),
@@ -1088,7 +658,7 @@ class PageIntroduction extends StatelessWidget {
           child: const Text(
             'Explore practical toolkits, field manuals, green guides, and '
             'recorded sessions designed to support climate action across '
-            'Thailand’s creative economy.',
+            'Thailand\'s creative economy.',
             style: TextStyle(
               color: CcatColors.textMuted,
               fontSize: 17,
@@ -1127,515 +697,7 @@ class ResourceFilters extends StatelessWidget {
               backgroundColor: Colors.transparent,
               selectedColor: CcatColors.selectedChip,
               labelStyle: TextStyle(
-                color: selected == filter
-                    ? CcatColors.textPrimary
-                    : filter.accent,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-              shape: const StadiumBorder(),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class SectionTitle extends StatelessWidget {
-  const SectionTitle(this.title, {super.key});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: const TextStyle(
-        color: CcatColors.textPrimary,
-        fontSize: 30,
-        fontWeight: FontWeight.w400,
-        letterSpacing: -1.1,
-      ),
-    );
-  }
-}
-
-class ResourceGrid extends StatelessWidget {
-  const ResourceGrid({
-    required this.items,
-    required this.narrow,
-    required this.onOpen,
-    super.key,
-  });
-
-  final List<ResourceItem> items;
-  final bool narrow;
-  final ValueChanged<ResourceItem> onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < 760;
-        final heading = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(width: 32, child: Divider(color: CcatColors.coral)),
-            const SizedBox(height: 18),
-            Text(title, style: _AboutTextStyle.sectionTitle),
-            if (label.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(label, style: _AboutTextStyle.label),
-            ],
-          ],
-        );
-
-        if (narrow) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [heading, const SizedBox(height: 32), child],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final item in items)
-              SizedBox(
-                width: cardWidth,
-                child: ResourceCard(item: item, onOpen: () => onOpen(item)),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class ResourceCard extends StatelessWidget {
-  const ResourceCard({required this.item, required this.onOpen, super.key});
-
-  final ResourceItem item;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onOpen,
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: CcatColors.surface,
-            border: Border.all(color: CcatColors.border),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: item.type == ResourceType.recording ? 194 : 248,
-                child: ResourceVisual(item: item),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(25),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.eyebrow,
-                      style: TextStyle(
-                        color: item.accent,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: .5,
-                      ),
-                    ),
-                    const SizedBox(height: 13),
-                    Text(
-                      item.title,
-                      style: const TextStyle(
-                        color: CcatColors.textPrimary,
-                        fontSize: 22,
-                        height: 1.16,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: -.8,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      item.description,
-                      style: const TextStyle(
-                        color: CcatColors.textMuted,
-                        fontSize: 14,
-                        height: 1.45,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    if (item.type == ResourceType.publication) ...[
-                      Text(
-                        item.date!,
-                        style: const TextStyle(
-                          color: CcatColors.textMuted,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 13),
-                    ],
-                    if (item.type == ResourceType.publication)
-                      PublicationActions(item: item, onOpen: onOpen)
-                    else
-                      RecordingAction(item: item, onOpen: onOpen),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ==========================================
-// SHARED COMPONENTS (Header, Footer, etc.)
-// ==========================================
-class SiteHeader extends StatelessWidget {
-  const SiteHeader({
-    required this.isEnglish,
-    required this.onLanguageSelected,
-    required this.currentIndex,
-    this.onTabSelected,
-    super.key,
-  });
-
-  final bool isEnglish;
-  final ValueChanged<bool> onLanguageSelected;
-  final int currentIndex;
-  final ValueChanged<int>? onTabSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 900;
-
-    return Container(
-      height: 72,
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: CcatColors.border)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: narrow ? 24 : 56),
-        child: Row(
-          children: [
-            GestureDetector(
-              onTap: () => _selectTab(context, 3),
-              child: const Text(
-                'CCAT',
-                style: TextStyle(
-                  color: CcatColors.textPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -1.3,
-                ),
-              ),
-            ),
-            const SizedBox(width: 18),
-            Container(width: 1, height: 20, color: CcatColors.border),
-            const SizedBox(width: 18),
-            if (!narrow)
-              const Text(
-                'Creatives for Climate Action — Thailand',
-                style: TextStyle(
-                  color: CcatColors.textPrimary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            const Spacer(),
-            if (!narrow)
-              DesktopNavigation(
-                currentIndex: currentIndex,
-                onTabSelected: onTabSelected,
-              ),
-            if (narrow)
-              IconButton(
-                icon: const Icon(
-                  Icons.menu_rounded,
-                  color: CcatColors.textPrimary,
-                ),
-                onPressed: () {
-                  // Open Mobile Drawer Menu
-                  _showNavigationDrawer(context);
-                },
-              ),
-            const SizedBox(width: 18),
-            LanguageToggle(
-              isEnglish: isEnglish,
-              onLanguageSelected: onLanguageSelected,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showNavigationDrawer(BuildContext context) {
-    final mainScreen = context.findAncestorStateOfType<_MainScreenState>();
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: CcatColors.background,
-      builder: (context) {
-        const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
-        return SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Menu',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 16),
-                  for (int i = 0; i < entries.length; i++)
-                    ListTile(
-                      title: Text(
-                        entries[i],
-                        style: TextStyle(
-                          fontWeight: i == currentIndex
-                              ? FontWeight.w800
-                              : FontWeight.w500,
-                          color: i == currentIndex
-                              ? CcatColors.green
-                              : CcatColors.textPrimary,
-                        ),
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        if (onTabSelected != null) {
-                          onTabSelected!(i);
-                        } else {
-                          mainScreen?._navigateToTab(i);
-                        }
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _selectTab(BuildContext context, int index) {
-    if (onTabSelected != null) {
-      onTabSelected!(index);
-      return;
-    }
-
-    context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(index);
-  }
-}
-
-class DesktopNavigation extends StatelessWidget {
-  const DesktopNavigation({
-    required this.currentIndex,
-    this.onTabSelected,
-    super.key,
-  });
-
-  final int currentIndex;
-  final ValueChanged<int>? onTabSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
-
-    return Row(
-      children: [
-        for (int i = 0; i < entries.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(left: 28),
-            child: InkWell(
-              onTap: () {
-                if (onTabSelected != null) {
-                  onTabSelected!(i);
-                } else {
-                  context
-                      .findAncestorStateOfType<_MainScreenState>()
-                      ?._navigateToTab(i);
-                }
-              },
-              child: Text(
-                entries[i],
-                style: TextStyle(
-                  color: i == currentIndex
-                      ? CcatColors.green
-                      : CcatColors.textMuted,
-                  fontSize: 14,
-                  fontWeight: i == currentIndex
-                      ? FontWeight.w700
-                      : FontWeight.w500,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class LanguageToggle extends StatelessWidget {
-  const LanguageToggle({
-    required this.isEnglish,
-    required this.onLanguageSelected,
-    super.key,
-  });
-
-  final bool isEnglish;
-  final ValueChanged<bool> onLanguageSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        border: Border.all(color: CcatColors.border),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _LanguageOption(
-            label: 'EN',
-            selected: isEnglish,
-            onTap: () => onLanguageSelected(true),
-          ),
-          _LanguageOption(
-            label: 'TH',
-            selected: !isEnglish,
-            onTap: () => onLanguageSelected(false),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LanguageOption extends StatelessWidget {
-  const _LanguageOption({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(18),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: selected ? CcatColors.textPrimary : CcatColors.textMuted,
-            fontSize: 12,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class PageIntroduction extends StatelessWidget {
-  const PageIntroduction({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'CCAT / OPEN LIBRARY',
-          style: TextStyle(
-            color: CcatColors.green,
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2.1,
-          ),
-        ),
-        const SizedBox(height: 24),
-        const Text(
-          'Resources & Knowledge Hub',
-          style: TextStyle(
-            color: CcatColors.textPrimary,
-            fontSize: 48,
-            height: 1.05,
-            fontWeight: FontWeight.w400,
-            letterSpacing: -2.2,
-          ),
-        ),
-        const SizedBox(height: 24),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: const Text(
-            'Explore practical toolkits, field manuals, green guides, and '
-            'recorded sessions designed to support climate action across '
-            'Thailand’s creative economy.',
-            style: TextStyle(
-              color: CcatColors.textMuted,
-              fontSize: 17,
-              height: 1.55,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class ResourceFilters extends StatelessWidget {
-  const ResourceFilters({
-    required this.selected,
-    required this.onSelected,
-    super.key,
-  });
-
-  final ResourceFilter selected;
-  final ValueChanged<ResourceFilter> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: ResourceFilter.values
-          .map(
-            (filter) => FilterChip(
-              label: Text(filter.label),
-              selected: selected == filter,
-              onSelected: (_) => onSelected(filter),
-              showCheckmark: false,
-              side: BorderSide(color: filter.accent),
-              backgroundColor: Colors.transparent,
-              selectedColor: CcatColors.selectedChip,
-              labelStyle: TextStyle(
-                color: selected == filter
-                    ? CcatColors.textPrimary
-                    : filter.accent,
+                color: selected == filter ? CcatColors.textPrimary : filter.accent,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -1685,7 +747,6 @@ class ResourceGrid extends StatelessWidget {
       builder: (context, constraints) {
         final columns = narrow ? 1 : 2;
         final cardWidth = (constraints.maxWidth - (columns - 1) * 22) / columns;
-
         return Wrap(
           spacing: 22,
           runSpacing: 22,
@@ -1812,10 +873,7 @@ class ResourceVisual extends StatelessWidget {
               alignment: Alignment.bottomLeft,
               child: Container(
                 color: CcatColors.textPrimary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                 child: Text(
                   item.visualLabel,
                   style: const TextStyle(
@@ -1868,7 +926,6 @@ class PublicationActions extends StatelessWidget {
         child: const Text('Coming Soon (Oct 2026)'),
       );
     }
-
     return Wrap(
       spacing: 10,
       runSpacing: 10,
@@ -1946,7 +1003,6 @@ class SiteFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < 700;
-
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -1960,365 +1016,6 @@ class SiteFooter extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              crossAxisAlignment: WrapCrossAlignment.start,
-              runSpacing: 24,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'CREATIVES FOR CLIMATE ACTION',
-                      style: TextStyle(
-                        color: CcatColors.purple,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: .9,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'A project by Creative Migration',
-                      style: TextStyle(
-                        color: CcatColors.textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                    SizedBox(height: 14),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FooterLink('Instagram', CcatColors.textPrimary),
-                        FooterLink('LinkedIn', CcatColors.textPrimary),
-                        FooterLink('Facebook', CcatColors.textPrimary),
-                      ],
-                    ),
-                  ],
-                ),
-                OutlinedButton(
-                  onPressed: () {},
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: CcatColors.purple,
-                    side: const BorderSide(color: CcatColors.purple),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 26,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: const Text(
-                    'Donate',
-                    style: TextStyle(fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Divider(color: CcatColors.border),
-            const SizedBox(height: 20),
-            const Text(
-              '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
-              style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FooterLink extends StatelessWidget {
-  const FooterLink(this.label, this.color, {super.key});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 18),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
-
-enum ResourceType { publication, recording }
-
-enum ResourceFilter {
-  all('All Resources', CcatColors.textPrimary),
-  publications('Publications & Toolkits 3', CcatColors.green),
-  recordings('Video Recordings 4', CcatColors.coral);
-
-  const ResourceFilter(this.label, this.accent);
-
-  final String label;
-  final Color accent;
-}
-
-class ResourceItem {
-  const ResourceItem({
-    required this.type,
-    required this.eyebrow,
-    required this.title,
-    required this.description,
-    required this.visualLabel,
-    required this.accent,
-    this.date,
-    this.detailDescription,
-    this.comingSoon = false,
-  });
-
-  final ResourceType type;
-  final String eyebrow;
-  final String title;
-  final String description;
-  final String visualLabel;
-  final Color accent;
-  final String? date;
-  final String? detailDescription;
-  final bool comingSoon;
-}
-
-class ResourceHighlightPage extends StatefulWidget {
-  const ResourceHighlightPage({
-    required this.item,
-    required this.initialIsEnglish,
-    required this.onTabSelected,
-    super.key,
-  });
-
-  final ResourceItem item;
-  final bool initialIsEnglish;
-  final ValueChanged<int> onTabSelected;
-
-  @override
-  State<ResourceHighlightPage> createState() => _ResourceHighlightPageState();
-}
-
-class _ResourceHighlightPageState extends State<ResourceHighlightPage> {
-  late bool _isEnglish = widget.initialIsEnglish;
-
-  @override
-  Widget build(BuildContext context) {
-    final item = widget.item;
-
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            SiteHeader(
-              isEnglish: _isEnglish,
-              onLanguageSelected: (isEnglish) {
-                setState(() => _isEnglish = isEnglish);
-              },
-              currentIndex: 3,
-              onTabSelected: widget.onTabSelected,
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 1600),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(56, 48, 56, 112),
-                          child: item.type == ResourceType.publication
-                              ? PdfHighlight(item: item)
-                              : VideoHighlight(item: item),
-                        ),
-                      ),
-                    ),
-                    const SiteFooter(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class PdfHighlight extends StatelessWidget {
-  const PdfHighlight({required this.item, super.key});
-
-  final ResourceItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        HighlightHero(item: item, isVideo: false),
-        const SizedBox(height: 36),
-        BackToResources(),
-        const SizedBox(height: 56),
-        HighlightIntro(item: item),
-        const SizedBox(height: 60),
-        PdfPreview(item: item),
-        const SizedBox(height: 38),
-        DownloadPanel(item: item),
-      ],
-    );
-  }
-}
-
-class VideoHighlight extends StatelessWidget {
-  const VideoHighlight({required this.item, super.key});
-
-  final ResourceItem item;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        HighlightHero(item: item, isVideo: true),
-        const SizedBox(height: 36),
-        BackToResources(),
-        const SizedBox(height: 56),
-        HighlightIntro(item: item),
-        const SizedBox(height: 48),
-        VideoPlayerStill(item: item),
-        const SizedBox(height: 32),
-        Text(
-          _videoDetailCopy(item),
-          style: const TextStyle(
-            color: CcatColors.textMuted,
-            fontSize: 16,
-            height: 1.65,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class PublicationActions extends StatelessWidget {
-  const PublicationActions({
-    required this.item,
-    required this.onOpen,
-    super.key,
-  });
-
-  final ResourceItem item;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    if (item.comingSoon) {
-      return OutlinedButton(
-        onPressed: onOpen,
-        style: OutlinedButton.styleFrom(
-          disabledForegroundColor: CcatColors.cyan,
-          side: const BorderSide(color: CcatColors.cyan),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
-        ),
-        child: const Text('Coming Soon (Oct 2026)'),
-      );
-    }
-
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        DownloadButton(
-          label: 'English PDF',
-          accent: item.accent,
-          onPressed: onOpen,
-        ),
-        DownloadButton(
-          label: 'Thai PDF',
-          accent: item.accent,
-          onPressed: onOpen,
-          outlined: true,
-        ),
-      ],
-    );
-  }
-}
-
-class DownloadButton extends StatelessWidget {
-  const DownloadButton({
-    required this.label,
-    required this.accent,
-    required this.onPressed,
-    this.outlined = false,
-    super.key,
-  });
-
-  final String label;
-  final Color accent;
-  final VoidCallback onPressed;
-  final bool outlined;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: outlined ? Colors.transparent : accent,
-        foregroundColor: outlined ? accent : CcatColors.background,
-        side: BorderSide(color: accent),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-        textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
-      ),
-      child: Text('$label ↓'),
-    );
-  }
-}
-
-class RecordingAction extends StatelessWidget {
-  const RecordingAction({required this.item, required this.onOpen, super.key});
-
-  final ResourceItem item;
-  final VoidCallback onOpen;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton.icon(
-      onPressed: onOpen,
-      style: TextButton.styleFrom(
-        foregroundColor: item.accent,
-        padding: EdgeInsets.zero,
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
-      ),
-      icon: const Icon(Icons.play_arrow_rounded, size: 18),
-      label: const Text('Watch Recording'),
-    );
-  }
-}
-
-class SiteFooter extends StatelessWidget {
-  const SiteFooter({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 700;
-
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: CcatColors.border)),
-      ),
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: narrow ? 24 : 56,
-          vertical: 34,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Brand Info on Left | Donate Button on Right (ABOVE Divider)
             if (narrow)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -2337,12 +1034,9 @@ class SiteFooter extends StatelessWidget {
                   _buildDonateButton(),
                 ],
               ),
-
             const SizedBox(height: 32),
             const Divider(color: CcatColors.border),
             const SizedBox(height: 20),
-
-            // Bottom Row: Copyright Only (BELOW Divider)
             const Text(
               '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
               style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
@@ -2354,10 +1048,10 @@ class SiteFooter extends StatelessWidget {
   }
 
   Widget _buildBrandBlock() {
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'CREATIVES FOR CLIMATE ACTION',
           style: TextStyle(
             color: CcatColors.purple,
@@ -2366,18 +1060,18 @@ class SiteFooter extends StatelessWidget {
             letterSpacing: .9,
           ),
         ),
-        SizedBox(height: 8),
-        Text(
+        const SizedBox(height: 8),
+        const Text(
           'A project by Creative Migration',
           style: TextStyle(
             color: CcatColors.textMuted,
             fontSize: 12,
           ),
         ),
-        SizedBox(height: 14),
+        const SizedBox(height: 14),
         Row(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: const [
             FooterLink('Instagram', CcatColors.textPrimary),
             FooterLink('LinkedIn', CcatColors.textPrimary),
             FooterLink('Facebook', CcatColors.textPrimary),
@@ -2393,10 +1087,7 @@ class SiteFooter extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: CcatColors.purple,
         side: const BorderSide(color: CcatColors.purple),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 26,
-          vertical: 16,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
         shape: const StadiumBorder(),
       ),
       child: const Text(
@@ -2406,25 +1097,6 @@ class SiteFooter extends StatelessWidget {
     );
   }
 }
-
-  Widget _buildDonateButton() {
-    return OutlinedButton(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        foregroundColor: CcatColors.purple,
-        side: const BorderSide(color: CcatColors.purple),
-        padding: const EdgeInsets.symmetric(
-          horizontal: 26,
-          vertical: 16,
-        ),
-        shape: const StadiumBorder(),
-      ),
-      child: const Text(
-        'Donate',
-        style: TextStyle(fontWeight: FontWeight.w800),
-      ),
-    );
-  }
 
 class FooterLink extends StatelessWidget {
   const FooterLink(this.label, this.color, {super.key});
@@ -2447,6 +1119,10 @@ class FooterLink extends StatelessWidget {
     );
   }
 }
+
+// ============================================================================
+// RESOURCE DATA MODELS & DATA
+// ============================================================================
 
 enum ResourceType { publication, recording }
 
@@ -2507,7 +1183,6 @@ class _ResourceHighlightPageState extends State<ResourceHighlightPage> {
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -2551,7 +1226,6 @@ class PdfHighlight extends StatelessWidget {
   const PdfHighlight({required this.item, super.key});
 
   final ResourceItem item;
-  final bool isVideo;
 
   @override
   Widget build(BuildContext context) {
@@ -2560,7 +1234,7 @@ class PdfHighlight extends StatelessWidget {
       children: [
         HighlightHero(item: item, isVideo: false),
         const SizedBox(height: 36),
-        BackToResources(),
+        const BackToResources(),
         const SizedBox(height: 56),
         HighlightIntro(item: item),
         const SizedBox(height: 60),
@@ -2584,7 +1258,7 @@ class VideoHighlight extends StatelessWidget {
       children: [
         HighlightHero(item: item, isVideo: true),
         const SizedBox(height: 36),
-        BackToResources(),
+        const BackToResources(),
         const SizedBox(height: 56),
         HighlightIntro(item: item),
         const SizedBox(height: 48),
@@ -2604,7 +1278,11 @@ class VideoHighlight extends StatelessWidget {
 }
 
 class HighlightHero extends StatelessWidget {
-  const HighlightHero({required this.item, required this.isVideo, super.key});
+  const HighlightHero({
+    required this.item,
+    required this.isVideo,
+    super.key,
+  });
 
   final ResourceItem item;
   final bool isVideo;
@@ -2632,7 +1310,7 @@ class HighlightHero extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                isVideo ? 'VIDEO RESOURCE / 01' : 'PDF RESOURCE / 01',
+                isVideo ? 'VIDEO RESOURCE/01' : 'PDF RESOURCE/01',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -2641,12 +1319,13 @@ class HighlightHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-              if (isVideo)
+              if (isVideo) ...[
                 const Text(
                   'Video still',
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
+              ],
               Text(
                 isVideo ? 'Watch online' : 'Digital guide',
                 style: const TextStyle(
@@ -2658,6 +1337,7 @@ class HighlightHero extends StatelessWidget {
             ],
           ),
         );
+
         final details = Container(
           constraints: const BoxConstraints(minHeight: 356),
           padding: const EdgeInsets.all(38),
@@ -2721,7 +1401,6 @@ class HighlightHero extends StatelessWidget {
         if (narrow) {
           return Column(children: [left, const SizedBox(height: 18), details]);
         }
-
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -2768,9 +1447,7 @@ class HighlightIntro extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            item.type == ResourceType.publication
-                ? 'PDF RESOURCE'
-                : 'VIDEO RESOURCE',
+            item.type == ResourceType.publication ? 'PDF RESOURCE' : 'VIDEO RESOURCE',
             style: TextStyle(
               color: item.accent,
               fontSize: 12,
@@ -2927,7 +1604,7 @@ class DownloadPanel extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '${item.date ?? 'PDF resource'} · English / Thai',
+                '${item.date ?? 'PDF resource'} English / Thai',
                 style: const TextStyle(
                   color: CcatColors.textMuted,
                   fontSize: 13,
@@ -3014,13 +1691,13 @@ String _videoDetailCopy(ResourceItem item) {
       'video URL, speaker credits, captions, or a still image yet.';
 }
 
-const resourceItems = <ResourceItem>[
+final resourceItems = <ResourceItem>[
   ResourceItem(
     type: ResourceType.publication,
-    eyebrow: 'PUBLICATIONS · LAUNCHING OCTOBER 2026',
-    title: 'Creative Responses to Sustainability — Thailand Guide',
+    eyebrow: 'PUBLICATIONS LAUNCHING OCTOBER 2026',
+    title: 'Creative Responses to Sustainability Thailand Guide',
     description:
-        'Explore the Green Guide for Thailand, the latest edition in ASEF’s '
+        'Explore the Green Guide for Thailand, the latest edition in ASEF\'s '
         'Creative Responses to Sustainability series, researched by Creative Migration.',
     visualLabel: 'GUIDE / 2026',
     accent: CcatColors.cyan,
@@ -3035,9 +1712,9 @@ const resourceItems = <ResourceItem>[
   ),
   ResourceItem(
     type: ResourceType.publication,
-    eyebrow: 'FIELD MANUAL · AVAILABLE NOW',
+    eyebrow: 'FIELD MANUAL AVAILABLE NOW',
     title:
-        'CCAT Field Manual 2025 — Sustainability Guidelines for BKKCAW Organizers',
+        'CCAT Field Manual 2025 Sustainability Guidelines for BKKCAW Organizers',
     description:
         'A condensed version of the CCAT Toolkit 2024, adapted for BKKCAW 2025 '
         'organizers who need a simple guide to offset their environmental '
@@ -3048,12 +1725,12 @@ const resourceItems = <ResourceItem>[
   ),
   ResourceItem(
     type: ResourceType.publication,
-    eyebrow: 'TOOLKIT · FLAGSHIP RESOURCE',
+    eyebrow: 'TOOLKIT FLAGSHIP RESOURCE',
     title:
-        'CCAT Toolkit 2024 — Sustainable Event Management for Thailand’s Creative Economy',
+        'CCAT Toolkit 2024 Sustainable Event Management for Thailand\'s Creative Economy',
     description:
-        'A bilingual first-of-its-kind resource for Thailand’s festival and '
-        'event industry’s green transition.',
+        'A bilingual first-of-its-kind resource for Thailand\'s festival and '
+        'event industry\'s green transition.',
     visualLabel: 'TOOLKIT / 2024',
     accent: CcatColors.gold,
     date: 'October 30, 2024',
@@ -3065,7 +1742,7 @@ const resourceItems = <ResourceItem>[
   ),
   ResourceItem(
     type: ResourceType.recording,
-    eyebrow: 'VIDEO RECORDING · November 20, 2025',
+    eyebrow: 'VIDEO RECORDING November 20, 2025',
     title:
         'From Bangkok to Brazil: Culture-Based Climate Action Across the Global Majority',
     description:
@@ -3077,9 +1754,9 @@ const resourceItems = <ResourceItem>[
   ),
   ResourceItem(
     type: ResourceType.recording,
-    eyebrow: 'VIDEO RECORDING · May 22, 2025',
+    eyebrow: 'VIDEO RECORDING May 22, 2025',
     title:
-        'Mobilizing Culture: Creative Leadership & Transnational Policy — Panel Recording',
+        'Mobilizing Culture: Creative Leadership & Transnational Policy Panel Recording',
     description:
         'Watch the recording of a panel discussion held on May 22, 2025 '
         '(International Day for Biodiversity), connecting LA Climate Week with '
@@ -3089,22 +1766,22 @@ const resourceItems = <ResourceItem>[
   ),
   ResourceItem(
     type: ResourceType.recording,
-    eyebrow: 'CONFERENCE RECORDING · June 27, 2024',
-    title: 'CCAT Conference 2024 — Day 2 Recording',
+    eyebrow: 'CONFERENCE RECORDING June 27, 2024',
+    title: 'CCAT Conference 2024 Day 2 Recording',
     description:
         'Watch the full recording of Day 2 of the Creatives for Climate Action '
-        '— Thailand Conference, held on June 27, 2024 at the Thailand Creative '
+        '- Thailand Conference, held on June 27, 2024 at the Thailand Creative '
         '& Design Center in Bangkok and online.',
     visualLabel: 'CONFERENCE',
     accent: CcatColors.gold,
   ),
   ResourceItem(
     type: ResourceType.recording,
-    eyebrow: 'CONFERENCE RECORDING · June 26, 2024',
-    title: 'CCAT Conference 2024 — Day 1 Recording',
+    eyebrow: 'CONFERENCE RECORDING June 26, 2024',
+    title: 'CCAT Conference 2024 Day 1 Recording',
     description:
         'Watch the full recording of Day 1 of the Creatives for Climate Action '
-        '— Thailand Conference, held on June 26, 2024 at the Thailand Creative '
+        '- Thailand Conference, held on June 26, 2024 at the Thailand Creative '
         '& Design Center in Bangkok and online.',
     visualLabel: 'CONFERENCE',
     accent: CcatColors.gold,
@@ -3126,5 +1803,3 @@ abstract final class CcatColors {
   static const coral = Color(0xFFEA704B);
   static const magenta = Color(0xFFD04C91);
 }
-
-
