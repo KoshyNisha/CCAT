@@ -18,7 +18,7 @@ class EventsPage extends StatefulWidget {
 }
 
 class _EventsPageState extends State<EventsPage> {
-  EventFilter _selectedFilter = EventFilter.all;
+  EventFilter selectedFilter = EventFilter.all;
 
   @override
   Widget build(BuildContext context) {
@@ -26,20 +26,20 @@ class _EventsPageState extends State<EventsPage> {
     final isNarrow = screenWidth < 760;
 
     final filteredEvents = eventItems.where((item) {
-  switch (_selectedFilter) {
-    case EventFilter.upcoming:
-      return item.status == EventStatus.upcoming;
-    case EventFilter.activeNow:
-      return item.status == EventStatus.activeNow;
-    case EventFilter.pastEvents:
-      return item.status == EventStatus.past && item.accent != CcatColors.gold;
-    case EventFilter.archive:
-      return item.accent == CcatColors.gold;
-    case EventFilter.all:
-    default:
-      return true;
-  }
-}).toList();
+      switch (selectedFilter) {
+        case EventFilter.upcoming:
+          return item.status == EventStatus.upcoming;
+        case EventFilter.activeNow:
+          return item.status == EventStatus.activeNow;
+        case EventFilter.pastEvents:
+          return item.status == EventStatus.past && item.accent != CcatColors.gold;
+        case EventFilter.archive:
+          return item.accent == CcatColors.gold;
+        case EventFilter.all:
+        default:
+          return true;
+      }
+    }).toList();
 
     final featuredEvent = eventItems.firstWhere(
       (item) => item.isFeatured,
@@ -77,9 +77,9 @@ class _EventsPageState extends State<EventsPage> {
                               const PageIntroduction(),
                               const SizedBox(height: 34),
                               EventFilters(
-                                selected: _selectedFilter,
+                                selected: selectedFilter,
                                 onSelected: (filter) {
-                                  setState(() => _selectedFilter = filter);
+                                  setState(() => selectedFilter = filter);
                                 },
                               ),
                               const SizedBox(height: 56),
@@ -664,7 +664,6 @@ class StatusBadge extends StatelessWidget {
   }
 }
 
-
 enum EventStatus { upcoming, activeNow, past }
 
 enum EventFilter {
@@ -703,8 +702,6 @@ class EventItem {
   final String? buttonLabel;
   final bool isFeatured;
 }
-
-// dummy data
 
 final eventItems = <EventItem>[
   EventItem(
@@ -756,7 +753,7 @@ final eventItems = <EventItem>[
     description:
         'The inaugural CCAT Conference united European and Thai stakeholders in the creative industry over two days at BACC Bangkok, delivering bilingual toolkits for sustainable event management and climate action.',
     accent: CcatColors.gold,
-    dateText: 'June 26–27, 2024',
+    dateText: 'June 26-27, 2024',
     buttonLabel: 'CCAT Conference 2024',
   ),
 ];

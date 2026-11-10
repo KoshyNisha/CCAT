@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
 import 'events_page.dart';
+import 'main.dart';
 
 class EventDetailPage extends StatelessWidget {
-  const EventDetailPage({
+  EventDetailPage({
     required this.event,
     required this.isEnglish,
     required this.onLanguageChanged,
@@ -15,6 +15,20 @@ class EventDetailPage extends StatelessWidget {
   final bool isEnglish;
   final ValueChanged<bool> onLanguageChanged;
   final VoidCallback onBackToEvents;
+
+  // Key used to scroll directly to the metadata/details section
+  final GlobalKey _detailsSectionKey = GlobalKey();
+
+  void _scrollToDetails() {
+    final context = _detailsSectionKey.currentContext;
+    if (context != null) {
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,16 +69,22 @@ class EventDetailPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 24),
-
-                              _EventHighlightHero(event: event, isNarrow: isNarrow),
-                              const SizedBox(height: 48),
-
-                              _EventMetadataRow(
+                              EventHighlightHero(
+                                event: event,
                                 isNarrow: isNarrow,
-                                dateText: event.dateText,
+                                onViewDetailsTap: _scrollToDetails,
                               ),
                               const SizedBox(height: 48),
-
+                              
+                              // Section Target for Smooth Scrolling
+                              KeyedSubtree(
+                                key: _detailsSectionKey,
+                                child: EventMetadataRow(
+                                  isNarrow: isNarrow,
+                                  dateText: event.dateText,
+                                ),
+                              ),
+                              const SizedBox(height: 48),
                               Text(
                                 event.title,
                                 style: const TextStyle(
@@ -87,11 +107,9 @@ class EventDetailPage extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 56),
-
-                              const _ProgrammePreview(),
+                              const ProgrammePreview(),
                               const SizedBox(height: 64),
-
-                              _RegistrationCard(event: event),
+                              RegistrationCard(event: event),
                               const SizedBox(height: 96),
                             ],
                           ),
@@ -110,11 +128,17 @@ class EventDetailPage extends StatelessWidget {
   }
 }
 
-class _EventHighlightHero extends StatelessWidget {
-  const _EventHighlightHero({required this.event, required this.isNarrow});
+class EventHighlightHero extends StatelessWidget {
+  const EventHighlightHero({
+    required this.event,
+    required this.isNarrow,
+    required this.onViewDetailsTap,
+    super.key,
+  });
 
   final EventItem event;
   final bool isNarrow;
+  final VoidCallback onViewDetailsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -280,17 +304,26 @@ class _EventHighlightHero extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
+          
+          // Hoverable & Clickable Button with Smooth Auto-Scroll
           TextButton.icon(
-            onPressed: () {},
+            onPressed: onViewDetailsTap,
             icon: const Icon(Icons.arrow_downward, size: 14),
             label: const Text('VIEW EVENT DETAILS'),
-            style: TextButton.styleFrom(
-              foregroundColor: CcatColors.textPrimary,
-              padding: EdgeInsets.zero,
-              textStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
+            style: ButtonStyle(
+              padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+              foregroundColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.hovered)) {
+                  return event.accent; // Highlights accent color on hover
+                }
+                return CcatColors.textPrimary;
+              }),
+              textStyle: const WidgetStatePropertyAll(
+                TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
               ),
             ),
           ),
@@ -300,8 +333,8 @@ class _EventHighlightHero extends StatelessWidget {
   }
 }
 
-class _EventMetadataRow extends StatelessWidget {
-  const _EventMetadataRow({required this.isNarrow, this.dateText});
+class EventMetadataRow extends StatelessWidget {
+  const EventMetadataRow({required this.isNarrow, this.dateText, super.key});
 
   final bool isNarrow;
   final String? dateText;
@@ -309,17 +342,17 @@ class _EventMetadataRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      _MetaItem(
+      MetaItem(
         label: 'DATE & TIME',
         title: dateText ?? 'Sat, 21 Mar',
         subtitle: '10:00–17:00',
       ),
-      const _MetaItem(
+      const MetaItem(
         label: 'LOCATION',
         title: 'Bangkok Art and Culture Centre',
         subtitle: 'Pathum Wan, Bangkok',
       ),
-      const _MetaItem(
+      const MetaItem(
         label: 'ADMISSION',
         title: 'Free',
         subtitle: 'Registration required',
@@ -329,10 +362,12 @@ class _EventMetadataRow extends StatelessWidget {
     if (isNarrow) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: items.map((e) => Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: e,
-        )).toList(),
+        children: items
+            .map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: e,
+                ))
+            .toList(),
       );
     }
 
@@ -343,11 +378,12 @@ class _EventMetadataRow extends StatelessWidget {
   }
 }
 
-class _MetaItem extends StatelessWidget {
-  const _MetaItem({
+class MetaItem extends StatelessWidget {
+  const MetaItem({
     required this.label,
     required this.title,
     required this.subtitle,
+    super.key,
   });
 
   final String label;
@@ -387,8 +423,8 @@ class _MetaItem extends StatelessWidget {
   }
 }
 
-class _ProgrammePreview extends StatelessWidget {
-  const _ProgrammePreview();
+class ProgrammePreview extends StatelessWidget {
+  const ProgrammePreview({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -414,19 +450,19 @@ class _ProgrammePreview extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         const Divider(color: CcatColors.border),
-        const _ProgramRow(time: '10:00', title: 'Doors open & welcome'),
+        const ProgramRow(time: '10:00', title: 'Doors open & welcome'),
         const Divider(color: CcatColors.border),
-        const _ProgramRow(time: '11:00', title: 'Creative voices on culture and climate'),
+        const ProgramRow(time: '11:00', title: 'Creative voices on culture and climate'),
         const Divider(color: CcatColors.border),
-        const _ProgramRow(time: '14:00', title: 'Hands-on ideas & community workshops'),
+        const ProgramRow(time: '14:00', title: 'Hands-on ideas & community workshops'),
         const Divider(color: CcatColors.border),
       ],
     );
   }
 }
 
-class _ProgramRow extends StatelessWidget {
-  const _ProgramRow({required this.time, required this.title});
+class ProgramRow extends StatelessWidget {
+  const ProgramRow({required this.time, required this.title, super.key});
 
   final String time;
   final String title;
@@ -462,8 +498,8 @@ class _ProgramRow extends StatelessWidget {
   }
 }
 
-class _RegistrationCard extends StatelessWidget {
-  const _RegistrationCard({required this.event});
+class RegistrationCard extends StatelessWidget {
+  const RegistrationCard({required this.event, super.key});
 
   final EventItem event;
 
@@ -502,12 +538,10 @@ class _RegistrationCard extends StatelessWidget {
             ],
           ),
           OutlinedButton(
-            onPressed: isPast ? null : () {}, // Setting onPressed to null disables the button
+            onPressed: isPast ? null : () {},
             style: OutlinedButton.styleFrom(
               foregroundColor: isPast ? CcatColors.textMuted : CcatColors.textPrimary,
-              side: BorderSide(
-                color: isPast ? CcatColors.border : CcatColors.border,
-              ),
+              side: const BorderSide(color: CcatColors.border),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               shape: const StadiumBorder(),
             ),
