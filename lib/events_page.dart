@@ -26,20 +26,20 @@ class _EventsPageState extends State<EventsPage> {
     final isNarrow = screenWidth < 760;
 
     final filteredEvents = eventItems.where((item) {
-      switch (_selectedFilter) {
-        case EventFilter.upcoming:
-          return item.status == EventStatus.upcoming;
-        case EventFilter.activeNow:
-          return item.status == EventStatus.activeNow;
-        case EventFilter.pastEvents:
-          return item.status == EventStatus.past;
-        case EventFilter.archive:
-          return item.status == EventStatus.past;
-        case EventFilter.all:
-        default:
-          return true;
-      }
-    }).toList();
+  switch (_selectedFilter) {
+    case EventFilter.upcoming:
+      return item.status == EventStatus.upcoming;
+    case EventFilter.activeNow:
+      return item.status == EventStatus.activeNow;
+    case EventFilter.pastEvents:
+      return item.status == EventStatus.past && item.accent != CcatColors.gold;
+    case EventFilter.archive:
+      return item.accent == CcatColors.gold;
+    case EventFilter.all:
+    default:
+      return true;
+  }
+}).toList();
 
     final featuredEvent = eventItems.firstWhere(
       (item) => item.isFeatured,
@@ -116,10 +116,6 @@ class _EventsPageState extends State<EventsPage> {
     );
   }
 }
-
-// ==========================================
-// PAGE INTRO & INTERACTIVE FILTER CHIPS
-// ==========================================
 
 class PageIntroduction extends StatelessWidget {
   const PageIntroduction({super.key});
@@ -249,10 +245,6 @@ class EventFilters extends StatelessWidget {
     );
   }
 }
-
-// ==========================================
-// FEATURED & GRID CARDS
-// ==========================================
 
 class FeaturedEventCard extends StatelessWidget {
   const FeaturedEventCard({
@@ -672,9 +664,6 @@ class StatusBadge extends StatelessWidget {
   }
 }
 
-// ==========================================
-// DATA MODELS & ENUMS
-// ==========================================
 
 enum EventStatus { upcoming, activeNow, past }
 
@@ -714,6 +703,8 @@ class EventItem {
   final String? buttonLabel;
   final bool isFeatured;
 }
+
+// dummy data
 
 final eventItems = <EventItem>[
   EventItem(

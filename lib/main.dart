@@ -227,9 +227,6 @@ class _ResourcesPageState extends State<ResourcesPage> {
   }
 }
 
-// ==========================================
-// 2. OTHER PAGE PLACEHOLDERS (About, News, Events, Contact)
-// ==========================================
 class AboutPage extends StatelessWidget {
   const AboutPage({
     required this.isEnglish,
@@ -745,42 +742,6 @@ class NewsPage extends StatelessWidget {
     );
   }
 }
-
-// class EventsPage extends StatelessWidget {
-//   const EventsPage({
-//     required this.isEnglish,
-//     required this.onLanguageChanged,
-//     super.key,
-//   });
-//   final bool isEnglish;
-//   final ValueChanged<bool> onLanguageChanged;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: SafeArea(
-//         child: Column(
-//           children: [
-//             SiteHeader(
-//               isEnglish: isEnglish,
-//               onLanguageSelected: onLanguageChanged,
-//               currentIndex: 2,
-//             ),
-//             const Expanded(
-//               child: Center(
-//                 child: Text(
-//                   'Events Page Content Coming Soon',
-//                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
-//                 ),
-//               ),
-//             ),
-//             const SiteFooter(),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
 
 class ContactPage extends StatelessWidget {
   const ContactPage({
@@ -1492,69 +1453,72 @@ class SiteFooter extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Section: Title & Social Links
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'CREATIVES FOR CLIMATE ACTION',
-                  style: TextStyle(
-                    color: CcatColors.purple,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: .9,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'A project by Creative Migration',
-                  style: TextStyle(
-                    color: CcatColors.textMuted,
-                    fontSize: 12,
-                  ),
-                ),
-                SizedBox(height: 14),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FooterLink('Instagram', CcatColors.textPrimary),
-                    FooterLink('LinkedIn', CcatColors.textPrimary),
-                    FooterLink('Facebook', CcatColors.textPrimary),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            const Divider(color: CcatColors.border),
-            const SizedBox(height: 20),
-
-            // Bottom Section: Copyright on left, Donate button on right
+            // Top Row: Brand Info on Left | Donate Button on Right (ABOVE Divider)
             if (narrow)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
-                    style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
-                  ),
-                  const SizedBox(height: 20),
+                  _buildBrandBlock(),
+                  const SizedBox(height: 24),
                   _buildDonateButton(),
                 ],
               )
             else
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
-                    style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
-                  ),
+                  _buildBrandBlock(),
                   _buildDonateButton(),
                 ],
               ),
+
+            const SizedBox(height: 32),
+            const Divider(color: CcatColors.border),
+            const SizedBox(height: 20),
+
+            // Bottom Row: Copyright Only (BELOW Divider)
+            const Text(
+              '© 2024–2026, Creative Migration, All rights reserved. Site by XXX',
+              style: TextStyle(color: CcatColors.textMuted, fontSize: 11),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBrandBlock() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'CREATIVES FOR CLIMATE ACTION',
+          style: TextStyle(
+            color: CcatColors.purple,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            letterSpacing: .9,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          'A project by Creative Migration',
+          style: TextStyle(
+            color: CcatColors.textMuted,
+            fontSize: 12,
+          ),
+        ),
+        SizedBox(height: 14),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FooterLink('Instagram', CcatColors.textPrimary),
+            FooterLink('LinkedIn', CcatColors.textPrimary),
+            FooterLink('Facebook', CcatColors.textPrimary),
+          ],
+        ),
+      ],
     );
   }
 
@@ -1577,6 +1541,25 @@ class SiteFooter extends StatelessWidget {
     );
   }
 }
+
+  Widget _buildDonateButton() {
+    return OutlinedButton(
+      onPressed: () {},
+      style: OutlinedButton.styleFrom(
+        foregroundColor: CcatColors.purple,
+        side: const BorderSide(color: CcatColors.purple),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 26,
+          vertical: 16,
+        ),
+        shape: const StadiumBorder(),
+      ),
+      child: const Text(
+        'Donate',
+        style: TextStyle(fontWeight: FontWeight.w800),
+      ),
+    );
+  }
 
 class FooterLink extends StatelessWidget {
   const FooterLink(this.label, this.color, {super.key});

@@ -45,7 +45,6 @@ class EventDetailPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // 1. Back Navigation Button
                               TextButton.icon(
                                 onPressed: onBackToEvents,
                                 icon: const Icon(Icons.arrow_back, size: 16),
@@ -57,18 +56,15 @@ class EventDetailPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 24),
 
-                              // 2. Dynamic Highlight Banner Header
                               _EventHighlightHero(event: event, isNarrow: isNarrow),
                               const SizedBox(height: 48),
 
-                              // 3. Date, Location & Admission Metadata Bar
                               _EventMetadataRow(
                                 isNarrow: isNarrow,
                                 dateText: event.dateText,
                               ),
                               const SizedBox(height: 48),
 
-                              // 4. Detailed Narrative Section
                               Text(
                                 event.title,
                                 style: const TextStyle(
@@ -92,12 +88,10 @@ class EventDetailPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 56),
 
-                              // 5. Programme Preview Timetable
                               const _ProgrammePreview(),
                               const SizedBox(height: 64),
 
-                              // 6. Registration Callout Card
-                              const _RegistrationCard(),
+                              _RegistrationCard(event: event),
                               const SizedBox(height: 96),
                             ],
                           ),
@@ -115,10 +109,6 @@ class EventDetailPage extends StatelessWidget {
     );
   }
 }
-
-// ============================================================================
-// HIGHLIGHT HERO WIDGET
-// ============================================================================
 
 class _EventHighlightHero extends StatelessWidget {
   const _EventHighlightHero({required this.event, required this.isNarrow});
@@ -310,10 +300,6 @@ class _EventHighlightHero extends StatelessWidget {
   }
 }
 
-// ============================================================================
-// METADATA, PROGRAMME & REGISTRATION SUB-WIDGETS
-// ============================================================================
-
 class _EventMetadataRow extends StatelessWidget {
   const _EventMetadataRow({required this.isNarrow, this.dateText});
 
@@ -421,7 +407,7 @@ class _ProgrammePreview extends StatelessWidget {
               ),
             ),
             Text(
-              'Schedule details to be confirmed',
+              'Schedule subject to change',
               style: TextStyle(color: CcatColors.textMuted, fontSize: 12),
             ),
           ],
@@ -477,10 +463,14 @@ class _ProgramRow extends StatelessWidget {
 }
 
 class _RegistrationCard extends StatelessWidget {
-  const _RegistrationCard();
+  const _RegistrationCard({required this.event});
+
+  final EventItem event;
 
   @override
   Widget build(BuildContext context) {
+    final isPast = event.status == EventStatus.past;
+
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
@@ -493,36 +483,43 @@ class _RegistrationCard extends StatelessWidget {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               Text(
-                'Save your place',
-                style: TextStyle(
+                isPast ? 'Registration Closed' : 'Save your place',
+                style: const TextStyle(
                   color: CcatColors.textPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Text(
-                'Free admission · Registration link to be added',
-                style: TextStyle(color: CcatColors.textMuted, fontSize: 13),
+                isPast
+                    ? 'Registration closed for this event'
+                    : 'Free admission · Registration link to be added',
+                style: const TextStyle(color: CcatColors.textMuted, fontSize: 13),
               ),
             ],
           ),
           OutlinedButton(
-            onPressed: () {},
+            onPressed: isPast ? null : () {}, // Setting onPressed to null disables the button
             style: OutlinedButton.styleFrom(
-              foregroundColor: CcatColors.textPrimary,
-              side: const BorderSide(color: CcatColors.border),
+              foregroundColor: isPast ? CcatColors.textMuted : CcatColors.textPrimary,
+              side: BorderSide(
+                color: isPast ? CcatColors.border : CcatColors.border,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               shape: const StadiumBorder(),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: const [
-                Text('Registration link'),
-                SizedBox(width: 8),
-                Icon(Icons.arrow_forward, size: 14),
+              children: [
+                Text(isPast ? 'Registration closed' : 'Registration link'),
+                const SizedBox(width: 8),
+                Icon(
+                  isPast ? Icons.lock_outline : Icons.arrow_forward,
+                  size: 14,
+                ),
               ],
             ),
           ),
