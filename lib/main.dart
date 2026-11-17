@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'about_page.dart';
 import 'events_page.dart';
 import 'event_highlight_page.dart';
 import 'pages/home_page.dart';
@@ -113,6 +114,11 @@ class _MainScreenState extends State<MainScreen>
       ContactPage(
         isEnglish: _isEnglish,
         onLanguageChanged: (val) => setState(() => _isEnglish = val),
+      ),
+      AboutPage(
+        isEnglish: _isEnglish,
+        onLanguageChanged: (val) => setState(() => _isEnglish = val),
+        onOpenEvents: () => _navigateToTab(2),
       ),
     ];
 
@@ -454,6 +460,7 @@ class SiteHeader extends StatelessWidget {
       backgroundColor: CcatColors.background,
       builder: (context) {
         const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
+        const tabIndices = [5, 1, 2, 3, 4];
         return SafeArea(
           child: SingleChildScrollView(
             child: Padding(
@@ -472,16 +479,16 @@ class SiteHeader extends StatelessWidget {
                       title: Text(
                         entries[i],
                         style: TextStyle(
-                          fontWeight: i == currentIndex ? FontWeight.w800 : FontWeight.w500,
-                          color: i == currentIndex ? CcatColors.green : CcatColors.textPrimary,
+                          fontWeight: tabIndices[i] == currentIndex ? FontWeight.w800 : FontWeight.w500,
+                          color: tabIndices[i] == currentIndex ? CcatColors.green : CcatColors.textPrimary,
                         ),
                       ),
                       onTap: () {
                         Navigator.pop(context);
                         if (onTabSelected != null) {
-                          onTabSelected!(i);
+                          onTabSelected!(tabIndices[i]);
                         } else {
-                          mainScreen?._navigateToTab(i);
+                          mainScreen?._navigateToTab(tabIndices[i]);
                         }
                       },
                     ),
@@ -508,6 +515,7 @@ class DesktopNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const entries = ['About', 'News', 'Events', 'Resources', 'Contact'];
+    const tabIndices = [5, 1, 2, 3, 4];
     return Row(
       children: [
         for (int i = 0; i < entries.length; i++)
@@ -516,17 +524,17 @@ class DesktopNavigation extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 if (onTabSelected != null) {
-                  onTabSelected!(i);
+                  onTabSelected!(tabIndices[i]);
                 } else {
-                  context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(i);
+                  context.findAncestorStateOfType<_MainScreenState>()?._navigateToTab(tabIndices[i]);
                 }
               },
               child: Text(
                 entries[i],
                 style: TextStyle(
-                  color: i == currentIndex ? CcatColors.green : CcatColors.textMuted,
+                  color: tabIndices[i] == currentIndex ? CcatColors.green : CcatColors.textMuted,
                   fontSize: 14,
-                  fontWeight: i == currentIndex ? FontWeight.w700 : FontWeight.w500,
+                  fontWeight: tabIndices[i] == currentIndex ? FontWeight.w700 : FontWeight.w500,
                 ),
               ),
             ),
