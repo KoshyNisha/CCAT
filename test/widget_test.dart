@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_flutter_app/main.dart';
+import 'package:my_flutter_app/pages/home_page.dart';
 
 void main() {
   testWidgets('renders the resources knowledge hub', (tester) async {
@@ -93,5 +94,104 @@ void main() {
 
     expect(find.text('VIDEO RESOURCE / 01'), findsOneWidget);
     expect(find.text('Watch online'), findsOneWidget);
+  });
+
+  group('home page', () {
+    // Wider than the real 1440 design: the test font is wider than real
+    // fonts and would overflow the shared header's nav row at 1440.
+    const desktop = Size(1800, 1000);
+    // The shared footer's social row needs ~400px in the test font.
+    const phone = Size(430, 932);
+
+    Future<void> pumpApp(WidgetTester tester, Size size) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(const CcatApp());
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('app opens on the home page', (tester) async {
+      await pumpApp(tester, desktop);
+
+      expect(find.text('OUR WORK'), findsOneWidget);
+      expect(find.text('LATEST UPDATES'), findsOneWidget);
+      expect(find.text('01 / 01'), findsOneWidget);
+      expect(find.text('Read article'), findsNWidgets(3));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shared header navigates away and the logo comes back', (
+      tester,
+    ) async {
+      await pumpApp(tester, desktop);
+
+      await tester.tap(find.text('Events').first);
+      await tester.pumpAndSettle();
+      expect(find.text('OUR WORK'), findsNothing);
+      expect(find.text('Events & Gatherings'), findsOneWidget);
+
+      await tester.tap(find.text('CCAT').first);
+      await tester.pumpAndSettle();
+      expect(find.text('OUR WORK'), findsOneWidget);
+    });
+
+    testWidgets('explore links open the matching tabs', (tester) async {
+      const links = {
+        'Explore all events': 'Events & Gatherings',
+        'Explore library': 'Resources & Knowledge Hub',
+        'Explore all news': 'News Page Content Coming Soon',
+      };
+      for (final MapEntry(key: link, value: pageText) in links.entries) {
+        await tester.pumpWidget(const SizedBox()); // fresh app state each time
+        await pumpApp(tester, desktop);
+        await tester.ensureVisible(find.text(link));
+        await tester.tap(find.text(link));
+        await tester.pumpAndSettle();
+        expect(find.text('OUR WORK'), findsNothing, reason: link);
+        expect(find.text(pageText), findsOneWidget, reason: link);
+      }
+    });
+
+    testWidgets('footer social links point to CCAT profiles', (tester) async {
+      await pumpApp(tester, desktop);
+
+      String? urlOf(String label) =>
+          tester.widget<FooterLink>(find.widgetWithText(FooterLink, label)).url;
+      expect(
+        urlOf('Instagram'),
+        'https://www.instagram.com/creatives_climateaction',
+      );
+      expect(
+        urlOf('LinkedIn'),
+        'https://www.linkedin.com/company/creatives-for-climate-action-thailand/',
+      );
+      expect(
+        urlOf('Facebook'),
+        'https://www.facebook.com/creativesforclimateactionglobal',
+      );
+    });
+
+    // Pumps HomePage alone: the Events tab's cards overflow at phone width
+    // (events_page.dart) and would fail this test otherwise.
+    testWidgets('phone layout scrolls end to end without overflow', (
+      tester,
+    ) async {
+      tester.view.physicalSize = phone;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(home: HomePage(isEnglish: true, onLanguageChanged: (_) {})),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -6000),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
   });
 }
