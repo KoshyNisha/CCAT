@@ -73,41 +73,51 @@ const _latestUpdates = [
   ),
 ];
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({
+    super.key,
+    required this.isEnglish,
+    required this.onLanguageChanged,
+    this.onNavigate,
+  });
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
+  final bool isEnglish;
+  final ValueChanged<bool> onLanguageChanged;
 
-class _HomePageState extends State<HomePage> {
-  bool _isEnglish = true;
+  /// Called with a nav label ('Home', 'About', 'News', ...) when tapped.
+  final ValueChanged<String>? onNavigate;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      endDrawer: const SiteNavDrawer(),
-      body: SafeArea(
-        child: Column(
-          children: [
-            SiteHeader(
-              isEnglish: _isEnglish,
-              onLanguageChanged: (value) => setState(() => _isEnglish = value),
-            ),
-            const Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    HeroCarousel(slides: _heroSlides),
-                    _OurWorkSection(),
-                    Divider(height: 1, thickness: 1, color: AppColors.border),
-                    _LatestUpdatesSection(),
-                    SiteFooter(),
-                  ],
+    // The other pages use the app-wide theme; this page carries its own
+    // (IBM Plex Sans and the Figma palette).
+    return Theme(
+      data: buildAppTheme(),
+      child: Scaffold(
+        endDrawer: SiteNavDrawer(onNavigate: onNavigate),
+        body: SafeArea(
+          child: Column(
+            children: [
+              SiteHeader(
+                isEnglish: isEnglish,
+                onLanguageChanged: onLanguageChanged,
+                onNavigate: onNavigate,
+              ),
+              const Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      HeroCarousel(slides: _heroSlides),
+                      _OurWorkSection(),
+                      Divider(height: 1, thickness: 1, color: AppColors.border),
+                      _LatestUpdatesSection(),
+                      SiteFooter(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

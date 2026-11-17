@@ -34,7 +34,13 @@ class SiteHeader extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: AppLayout.sidePadding(width)),
       child: Row(
         children: [
-          _Logo(showSubtitle: isDesktop || width >= 520),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () => onNavigate?.call('Home'),
+              child: _Logo(showSubtitle: isDesktop || width >= 520),
+            ),
+          ),
           const Spacer(),
           if (isDesktop) ...[
             for (final link in siteNavLinks) ...[

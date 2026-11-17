@@ -1,31 +1,52 @@
-# my_flutter_app
+# CCAT
 
-A new Flutter project.
+Flutter web application for Creatives for Climate Action - Thailand (CCAT).
 
-## Getting Started
+## Current implementation
 
-This project is a starting point for a Flutter application.
+Implemented pages are the **Resources & Knowledge Hub** and **About** pages,
+based on the updated CCAT Figma designs. The shared navigation now opens each
+site tab, with Resources in its dedicated Resources tab. The implemented
+screens include:
 
-A few resources to get you started if this is your first Flutter project:
+- Responsive desktop and narrow-screen layouts.
+- Publications/toolkits and session-recording card collections.
+- Category filters for all resources, publications/toolkits, and recordings.
+- Typed local resource data sourced from the CCAT 2026 website brief, structured
+  so it can be replaced by WordPress responses without changing the page layout.
+- An About page with CCAT’s origin, conference-to-initiative story, milestone
+  timeline, partners section, and shared footer.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Run locally in WSL
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd /home/justm/Thailand/CCAT
+flutter pub get
+flutter run -d chrome
+```
 
+## WordPress REST API
 
-## REST API Endpoints
+The local CMS base URL is:
 
-Base URL: `http://ccat-cms.local/wp-json/wp/v2` (Local)
+```text
+http://ccat-cms.local/wp-json/wp/v2
+```
 
-| Content Type | Endpoint | Example Full URL |
-| :--- | :--- | :--- |
-| **Posts** | `/posts` | `/wp-json/wp/v2/posts` |
-| **Events** | `/events` | `/wp-json/wp/v2/events` |
-| **Pages** | `/pages` | `/wp-json/wp/v2/pages` |
+| Content type | Endpoint |
+|---|---|
+| Posts | `/posts` |
+| Events | `/events` |
+| Pages | `/pages` |
 
-### Custom Parameters
-* Add `?acf_format=standard` to expand ACF field relational data in responses.
+Use `?acf_format=standard` to expand ACF relational fields in responses.
+
+`ccat-cms.local` must resolve inside the WSL environment before the app can
+replace its mock data with CMS content.
+
+## Validation
+
+```bash
+flutter analyze
+flutter test
+```
