@@ -46,8 +46,11 @@ class _HeroCarouselState extends State<HeroCarousel> {
     final isDesktop = size.width >= AppLayout.desktopBreakpoint;
     final isNarrow = size.width < AppLayout.tabletBreakpoint;
     final slide = widget.slides[_index];
-    // The design fills the first screen below the 100px header.
-    final minHeight = (size.height - 100).clamp(480.0, 904.0);
+    // The design fills the first screen below the site header.
+    final minHeight = (size.height - AppLayout.headerHeight).clamp(
+      480.0,
+      904.0,
+    );
 
     // Align so the max width still applies inside the Row's Expanded.
     final caption = Align(
@@ -195,13 +198,13 @@ class _HeroControls extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _CircleArrow(
-              arrow: '←',
+              icon: Icons.arrow_back,
               tooltip: 'Previous slide',
               onPressed: count > 1 ? onPrevious : null,
             ),
             const SizedBox(width: 16),
             _CircleArrow(
-              arrow: '→',
+              icon: Icons.arrow_forward,
               tooltip: 'Next slide',
               onPressed: count > 1 ? onNext : null,
             ),
@@ -214,12 +217,12 @@ class _HeroControls extends StatelessWidget {
 
 class _CircleArrow extends StatelessWidget {
   const _CircleArrow({
-    required this.arrow,
+    required this.icon,
     required this.tooltip,
     required this.onPressed,
   });
 
-  final String arrow;
+  final IconData icon;
   final String tooltip;
   final VoidCallback? onPressed;
 
@@ -238,12 +241,7 @@ class _CircleArrow extends StatelessWidget {
           child: SizedBox(
             width: 56,
             height: 56,
-            child: Center(
-              child: Text(
-                arrow,
-                style: const TextStyle(fontSize: 20, color: Colors.white),
-              ),
-            ),
+            child: Center(child: Icon(icon, size: 20, color: Colors.white)),
           ),
         ),
       ),

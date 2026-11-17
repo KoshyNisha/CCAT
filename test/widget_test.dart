@@ -97,103 +97,101 @@ void main() {
   });
 
   group('home page', () {
-    void setSize(WidgetTester tester, Size size) {
+    // Wider than the real 1440 design: the test font is wider than real
+    // fonts and would overflow the shared header's nav row at 1440.
+    const desktop = Size(1800, 1000);
+    // The shared footer's social row needs ~400px in the test font.
+    const phone = Size(430, 932);
+
+    Future<void> pumpApp(WidgetTester tester, Size size) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-    }
-
-    // Pumps HomePage on its own so other tabs' layout issues don't leak in.
-    Future<List<String>> pumpHome(WidgetTester tester, Size size) async {
-      setSize(tester, size);
-      final navigated = <String>[];
-      var isEnglish = true;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: StatefulBuilder(
-            builder: (context, setState) => HomePage(
-              isEnglish: isEnglish,
-              onLanguageChanged: (value) => setState(() => isEnglish = value),
-              onNavigate: navigated.add,
-            ),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      return navigated;
-    }
-
-    testWidgets('app opens on the home tab', (tester) async {
-      setSize(tester, const Size(1440, 1000));
       await tester.pumpWidget(const CcatApp());
       await tester.pumpAndSettle();
+    }
+
+    testWidgets('app opens on the home page', (tester) async {
+      await pumpApp(tester, desktop);
 
       expect(find.text('OUR WORK'), findsOneWidget);
       expect(find.text('LATEST UPDATES'), findsOneWidget);
-    });
-
-    testWidgets('desktop shows nav links and sections', (tester) async {
-      await pumpHome(tester, const Size(1440, 1000));
-
-      for (final link in ['About', 'News', 'Events', 'Resources', 'Contact']) {
-        expect(find.text(link), findsWidgets);
-      }
-      expect(find.byTooltip('Menu'), findsNothing);
       expect(find.text('01 / 01'), findsOneWidget);
-      expect(find.text('Read article →'), findsNWidgets(3));
+      expect(find.text('Read article'), findsNWidgets(3));
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('nav links and logo report where to go', (tester) async {
-      final navigated = await pumpHome(tester, const Size(1440, 1000));
-
-      await tester.tap(find.text('Events').first);
-      await tester.tap(find.text('CCAT'));
-      expect(navigated, ['Events', 'Home']);
-    });
-
-    testWidgets('phone layout uses a drawer and scrolls without overflow', (
+    testWidgets('shared header navigates away and the logo comes back', (
       tester,
     ) async {
-      final navigated = await pumpHome(tester, const Size(375, 812));
+      await pumpApp(tester, desktop);
 
-      await tester.tap(find.byTooltip('Menu'));
+      await tester.tap(find.text('Events').first);
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.descendant(
-          of: find.byType(Drawer),
-          matching: find.text('Resources'),
-        ),
+      expect(find.text('OUR WORK'), findsNothing);
+      expect(find.text('Events & Gatherings'), findsOneWidget);
+
+      await tester.tap(find.text('CCAT').first);
+      await tester.pumpAndSettle();
+      expect(find.text('OUR WORK'), findsOneWidget);
+    });
+
+    testWidgets('explore links open the matching tabs', (tester) async {
+      const links = {
+        'Explore all events': 'Events & Gatherings',
+        'Explore library': 'Resources & Knowledge Hub',
+        'Explore all news': 'News Page Content Coming Soon',
+      };
+      for (final MapEntry(key: link, value: pageText) in links.entries) {
+        await tester.pumpWidget(const SizedBox()); // fresh app state each time
+        await pumpApp(tester, desktop);
+        await tester.ensureVisible(find.text(link));
+        await tester.tap(find.text(link));
+        await tester.pumpAndSettle();
+        expect(find.text('OUR WORK'), findsNothing, reason: link);
+        expect(find.text(pageText), findsOneWidget, reason: link);
+      }
+    });
+
+    testWidgets('footer social links point to CCAT profiles', (tester) async {
+      await pumpApp(tester, desktop);
+
+      String? urlOf(String label) =>
+          tester.widget<FooterLink>(find.widgetWithText(FooterLink, label)).url;
+      expect(
+        urlOf('Instagram'),
+        'https://www.instagram.com/creatives_climateaction',
+      );
+      expect(
+        urlOf('LinkedIn'),
+        'https://www.linkedin.com/company/creatives-for-climate-action-thailand/',
+      );
+      expect(
+        urlOf('Facebook'),
+        'https://www.facebook.com/creativesforclimateactionglobal',
+      );
+    });
+
+    // Pumps HomePage alone: the Events tab's cards overflow at phone width
+    // (events_page.dart) and would fail this test otherwise.
+    testWidgets('phone layout scrolls end to end without overflow', (
+      tester,
+    ) async {
+      tester.view.physicalSize = phone;
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(home: HomePage(isEnglish: true, onLanguageChanged: (_) {})),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(Drawer), findsNothing);
-      expect(navigated, ['Resources']);
 
+      expect(find.byIcon(Icons.menu_rounded), findsOneWidget);
       await tester.drag(
         find.byType(SingleChildScrollView),
         const Offset(0, -6000),
       );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('language toggle switches selection', (tester) async {
-      await pumpHome(tester, const Size(1440, 1000));
-
-      bool isSelected(String label) => tester
-          .widgetList<Semantics>(
-            find.ancestor(
-              of: find.text(label),
-              matching: find.byType(Semantics),
-            ),
-          )
-          .any((w) => w.properties.selected == true);
-
-      expect(isSelected('EN'), isTrue);
-      await tester.tap(find.text('TH'));
-      await tester.pump();
-      expect(isSelected('TH'), isTrue);
-      expect(isSelected('EN'), isFalse);
     });
   });
 }

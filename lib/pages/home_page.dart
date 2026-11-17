@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../main.dart' show SiteFooter, SiteHeader;
 import '../theme/app_theme.dart';
 import '../widgets/arrow_link.dart';
 import '../widgets/content_width.dart';
 import '../widgets/hero_carousel.dart';
-import '../widgets/site_footer.dart';
-import '../widgets/site_header.dart';
 
 // Placeholder photo cropped from the Figma frame. Replace with the original
 // images, or featured images from the WordPress API.
@@ -78,46 +77,52 @@ class HomePage extends StatelessWidget {
     super.key,
     required this.isEnglish,
     required this.onLanguageChanged,
-    this.onNavigate,
+    this.onOpenEvents,
+    this.onOpenResources,
+    this.onOpenNews,
   });
 
   final bool isEnglish;
   final ValueChanged<bool> onLanguageChanged;
 
-  /// Called with a nav label ('Home', 'About', 'News', ...) when tapped.
-  final ValueChanged<String>? onNavigate;
+  /// Called by the "Explore …" links to switch to the matching tab.
+  final VoidCallback? onOpenEvents;
+  final VoidCallback? onOpenResources;
+  final VoidCallback? onOpenNews;
 
   @override
   Widget build(BuildContext context) {
-    // The other pages use the app-wide theme; this page carries its own
-    // (IBM Plex Sans and the Figma palette).
-    return Theme(
-      data: buildAppTheme(),
-      child: Scaffold(
-        endDrawer: SiteNavDrawer(onNavigate: onNavigate),
-        body: SafeArea(
-          child: Column(
-            children: [
-              SiteHeader(
-                isEnglish: isEnglish,
-                onLanguageChanged: onLanguageChanged,
-                onNavigate: onNavigate,
-              ),
-              const Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      HeroCarousel(slides: _heroSlides),
-                      _OurWorkSection(),
-                      Divider(height: 1, thickness: 1, color: AppColors.border),
-                      _LatestUpdatesSection(),
-                      SiteFooter(),
-                    ],
-                  ),
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Shared site header; -1 because Home has no nav entry to highlight.
+            SiteHeader(
+              isEnglish: isEnglish,
+              onLanguageSelected: onLanguageChanged,
+              currentIndex: -1,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    const HeroCarousel(slides: _heroSlides),
+                    _OurWorkSection(
+                      onOpenEvents: onOpenEvents,
+                      onOpenResources: onOpenResources,
+                    ),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.border,
+                    ),
+                    _LatestUpdatesSection(onOpenNews: onOpenNews),
+                    const SiteFooter(),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -147,7 +152,10 @@ class _SectionHeading extends StatelessWidget {
 }
 
 class _OurWorkSection extends StatelessWidget {
-  const _OurWorkSection();
+  const _OurWorkSection({this.onOpenEvents, this.onOpenResources});
+
+  final VoidCallback? onOpenEvents;
+  final VoidCallback? onOpenResources;
 
   @override
   Widget build(BuildContext context) {
@@ -160,22 +168,24 @@ class _OurWorkSection extends StatelessWidget {
       color: AppColors.accent,
     );
 
-    const events = _WorkCard(
+    final events = _WorkCard(
       title: 'Events',
       body:
           'We organize interactive sessions, workshops, and gatherings that '
           'bring artists, producers, and cultural workers together to '
           'collaborate on regional climate strategies and lived experiences.',
       linkLabel: 'Explore all events',
+      onLinkTap: onOpenEvents,
       background: AppColors.eventsCard,
       border: AppColors.eventsCardBorder,
     );
-    const resources = _WorkCard(
+    final resources = _WorkCard(
       title: 'Resources',
       body:
           'Explore practical frameworks, open-access action guides, and '
           'sustainability checklists tailored to regional cultural practices.',
       linkLabel: 'Explore library',
+      onLinkTap: onOpenResources,
       background: AppColors.resourcesCard,
       border: AppColors.resourcesCardBorder,
     );
@@ -224,21 +234,21 @@ class _OurWorkSection extends StatelessWidget {
           if (isDesktop)
             ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 412),
-              child: const IntrinsicHeight(
+              child: IntrinsicHeight(
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(child: events),
-                    SizedBox(width: 40),
+                    const SizedBox(width: 40),
                     Expanded(child: resources),
                   ],
                 ),
               ),
             )
           else
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [events, SizedBox(height: 24), resources],
+              children: [events, const SizedBox(height: 24), resources],
             ),
         ],
       ),
@@ -253,11 +263,13 @@ class _WorkCard extends StatelessWidget {
     required this.linkLabel,
     required this.background,
     required this.border,
+    this.onLinkTap,
   });
 
   final String title;
   final String body;
   final String linkLabel;
+  final VoidCallback? onLinkTap;
   final Color background;
   final Color border;
 
@@ -301,7 +313,11 @@ class _WorkCard extends StatelessWidget {
           if (fillsHeight) const Spacer(),
           const Divider(height: 1, thickness: 1, color: AppColors.cardDivider),
           SizedBox(height: isNarrow ? 28 : 44),
-          ArrowLink(label: linkLabel, fontSize: isNarrow ? 18 : 22),
+          ArrowLink(
+            label: linkLabel,
+            fontSize: isNarrow ? 18 : 22,
+            onTap: onLinkTap,
+          ),
         ],
       ),
     );
@@ -309,7 +325,9 @@ class _WorkCard extends StatelessWidget {
 }
 
 class _LatestUpdatesSection extends StatelessWidget {
-  const _LatestUpdatesSection();
+  const _LatestUpdatesSection({this.onOpenNews});
+
+  final VoidCallback? onOpenNews;
 
   @override
   Widget build(BuildContext context) {
@@ -362,6 +380,7 @@ class _LatestUpdatesSection extends StatelessWidget {
             child: ArrowLink(
               label: 'Explore all news',
               fontSize: isNarrow ? 18 : 22,
+              onTap: onOpenNews,
             ),
           ),
         ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'events_page.dart';
 import 'event_highlight_page.dart';
 import 'pages/home_page.dart';
@@ -37,23 +38,36 @@ class MainScreen extends StatefulWidget {
   State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
+class _MainScreenState extends State<MainScreen>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0; // Default to Home tab
   bool _isEnglish = true;
   EventItem? _selectedEvent; // Holds active event detail
 
-  // Same indices as SiteHeader's nav entries. There is no About tab yet, so
-  // 'About' lands on Home, matching SiteHeader.
-  static const _tabIndexForLabel = {
-    'Home': 0,
-    'About': 0,
-    'News': 1,
-    'Events': 2,
-    'Resources': 3,
-    'Contact': 4,
-  };
+  // Short fade-and-rise played whenever the visible tab changes. It starts
+  // from 35% opacity so the shared header doesn't flash.
+  late final AnimationController _tabSwitch = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+    value: 1,
+  );
+  late final Animation<double> _tabFade = Tween<double>(
+    begin: 0.35,
+    end: 1,
+  ).animate(CurvedAnimation(parent: _tabSwitch, curve: Curves.easeOut));
+  late final Animation<Offset> _tabRise = Tween(
+    begin: const Offset(0, 0.008),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(parent: _tabSwitch, curve: Curves.easeOutCubic));
+
+  @override
+  void dispose() {
+    _tabSwitch.dispose();
+    super.dispose();
+  }
 
   void _navigateToTab(int index) {
+    if (index != _currentIndex) _tabSwitch.forward(from: 0);
     setState(() {
       _currentIndex = index;
       _selectedEvent = null; // ALWAYS reset event detail view when clicking tabs or CCAT logo
@@ -83,7 +97,9 @@ class _MainScreenState extends State<MainScreen> {
       HomePage(
         isEnglish: _isEnglish,
         onLanguageChanged: (val) => setState(() => _isEnglish = val),
-        onNavigate: (label) => _navigateToTab(_tabIndexForLabel[label] ?? 0),
+        onOpenNews: () => _navigateToTab(1),
+        onOpenEvents: () => _navigateToTab(2),
+        onOpenResources: () => _navigateToTab(3),
       ),
       NewsPage(
         isEnglish: _isEnglish,
@@ -101,9 +117,15 @@ class _MainScreenState extends State<MainScreen> {
     ];
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pages,
+      body: FadeTransition(
+        opacity: _tabFade,
+        child: SlideTransition(
+          position: _tabRise,
+          child: IndexedStack(
+            index: _currentIndex,
+            children: pages,
+          ),
+        ),
       ),
     );
   }
@@ -1044,9 +1066,22 @@ class SiteFooter extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: const [
-            FooterLink('Instagram', CcatColors.textPrimary),
-            FooterLink('LinkedIn', CcatColors.textPrimary),
-            FooterLink('Facebook', CcatColors.textPrimary),
+            FooterLink(
+              'Instagram',
+              CcatColors.textPrimary,
+              url: 'https://www.instagram.com/creatives_climateaction',
+            ),
+            FooterLink(
+              'LinkedIn',
+              CcatColors.textPrimary,
+              url:
+                  'https://www.linkedin.com/company/creatives-for-climate-action-thailand/',
+            ),
+            FooterLink(
+              'Facebook',
+              CcatColors.textPrimary,
+              url: 'https://www.facebook.com/creativesforclimateactionglobal',
+            ),
           ],
         ),
       ],
@@ -1071,23 +1106,39 @@ class SiteFooter extends StatelessWidget {
 }
 
 class FooterLink extends StatelessWidget {
-  const FooterLink(this.label, this.color, {super.key});
+  const FooterLink(this.label, this.color, {this.url, super.key});
 
   final String label;
   final Color color;
 
+  /// Opened in a new browser tab (or the external app) when tapped.
+  final String? url;
+
   @override
   Widget build(BuildContext context) {
+    final text = Text(
+      label,
+      style: TextStyle(
+        color: color,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
+      ),
+    );
     return Padding(
       padding: const EdgeInsets.only(right: 18),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
+      child: url == null
+          ? text
+          : Semantics(
+              link: true,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () => launchUrl(
+                  Uri.parse(url!),
+                  mode: LaunchMode.externalApplication,
+                ),
+                child: text,
+              ),
+            ),
     );
   }
 }
